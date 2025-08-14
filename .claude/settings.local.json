@@ -7,7 +7,10 @@
       "Bash(rm:*)",
       "WebSearch",
       "Bash(npm run dev:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git commit:*)",
+      "Bash(git tag:*)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": [],

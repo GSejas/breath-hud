@@ -1,0 +1,81 @@
+{
+  "window": {
+    "width": 300,
+    "height": 300,
+    "position": { "x": 100, "y": 100 },
+    "transparent": true,
+    "alwaysOnTop": true,
+    "resizable": false,
+    "frame": false
+  },
+  "appearance": {
+    "background": "rgba(0, 0, 0, 0.8)",
+    "borderColor": "rgba(255, 255, 255, 0.3)",
+    "opacity": 1.0,
+    "pinnedBackground": "rgba(0, 0, 0, 0.1)",
+    "pinnedBorderColor": "rgba(255, 255, 255, 0.1)",
+    "pinnedOpacity": 0.4
+  },
+  "meditation": {
+    "defaultMode": "basic",
+    "defaultShape": "circle",
+    "defaultPattern": "zen-simple",
+    "defaultTheme": "ocean",
+    "defaultScale": 1.0,
+    "defaultIntensity": 0.7,
+    "availableShapes": [
+      "circle",
+      "triangle", 
+      "square",
+      "star",
+      "heart",
+      "lotus"
+    ],
+    "availablePatterns": [
+      "zen-simple",
+      "box-breathing",
+      "relaxing-478",
+      "energizing-321",
+      "flow-natural"
+    ],
+    "availableThemes": [
+      "ocean",
+      "forest", 
+      "sunset",
+      "moonlight",
+      "minimal"
+    ]
+  },
+  "audio": {
+    "enabled": false,
+    "volume": 0.5,
+    "sounds": {
+      "inhale": null,
+      "exhale": null,
+      "chime": false
+    },
+    "voice": {
+      "enabled": false,
+      "language": "en-US",
+      "volume": 0.3
+    }
+  },
+  "controls": {
+    "keyboardShortcuts": true,
+    "globalHotkeys": {
+      "attention": "CommandOrControl+Alt+B",
+      "togglePin": "CommandOrControl+Alt+P", 
+      "showHide": "CommandOrControl+Alt+H"
+    },
+    "mouseInteraction": {
+      "hoverToShow": true,
+      "clickThrough": true
+    }
+  },
+  "advanced": {
+    "scaleRange": { "min": 0.5, "max": 2.0 },
+    "intensityRange": { "min": 0.1, "max": 1.0 },
+    "animationSmoothing": true,
+    "phaseTransitions": "smooth"
+  }
+}

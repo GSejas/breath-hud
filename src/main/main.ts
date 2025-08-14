@@ -63,12 +63,16 @@ class HudApplication {
 
     console.log('Window created, loading HTML...');
 
-    // Load the renderer HTML directly from source
+    // Load the enhanced renderer HTML directly from source
+    const htmlFile = process.env.ENHANCED_MODE === 'true' 
+      ? '../../src/renderer/enhanced-index.html'
+      : '../../src/renderer/index.html';
+      
     if (process.env.NODE_ENV === 'development') {
-      this.mainWindow.loadFile(join(__dirname, '../../src/renderer/index.html'));
+      this.mainWindow.loadFile(join(__dirname, htmlFile));
       this.mainWindow.webContents.openDevTools();
     } else {
-      this.mainWindow.loadFile(join(__dirname, '../../src/renderer/index.html'));
+      this.mainWindow.loadFile(join(__dirname, htmlFile));
     }
 
     this.mainWindow.on('ready-to-show', () => {

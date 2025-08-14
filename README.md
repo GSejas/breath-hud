@@ -24,9 +24,30 @@ npm run build
 # Start the HUD
 npm start
 
-# Development mode (auto-rebuild)
+# Development mode - Simple version
 npm run dev
+
+# Development mode - Enhanced tile control system
+npm run dev:enhanced
 ```
+
+## ✨ Two Versions Available
+
+### Simple Version (`npm run dev`)
+- Clean breathing circle animation
+- Basic pin/unpin functionality  
+- Minimal, distraction-free interface
+
+### Enhanced Version (`npm run dev:enhanced`)
+- **4 Control Modes**: Zen, Basic, Advanced, Config
+- **6 Breathing Shapes**: Circle, Triangle, Square, Star, Heart, Lotus
+- **5 Breathing Patterns**: Zen, Box, 4-7-8, Energizing, Natural Flow
+- **5 Visual Themes**: Ocean, Forest, Sunset, Moonlight, Minimal
+- **Quadrant-based UI**: Tile control system with mode switching
+- **Advanced Controls**: Size, intensity, theme cycling
+- **Keyboard Shortcuts**: Arrow keys for navigation
+
+*See [ENHANCED_FEATURES.md](./ENHANCED_FEATURES.md) for comprehensive documentation.*
 
 ## Features
 
