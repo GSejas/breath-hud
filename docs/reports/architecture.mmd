@@ -1,0 +1,21 @@
+%% Architecture flowchart for HUD build & runtime
+flowchart TD
+  subgraph Build
+    A[TypeScript: tsc -b tsconfig.build.json] --> B[Emit dist/main & dist/renderer]
+    B --> C[Node: scripts/generate-renderer-html.js]
+    C --> D[Create dist/renderer/index.html]
+  end
+
+  subgraph Runtime
+    M[Electron main (dist/main/main.js)] -->|createWindow| W[BrowserWindow]
+    W -->|loads file://dist/renderer/index.html| R[Renderer (app.js)]
+    M -->|preload| P[Preload (dist/main/preload.js)]
+    P --> R
+    M --> S[Shared (dist/shared/*.js)]
+    R --> S
+  end
+
+  style Build fill:#f9f,stroke:#333,stroke-width:1px
+  style Runtime fill:#eef,stroke:#333,stroke-width:1px
+
+  click A "https://www.typescriptlang.org/" "TypeScript"

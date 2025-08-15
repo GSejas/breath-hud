@@ -1,0 +1,17 @@
+%% IPC sequence diagram: Renderer <-> Preload <-> Main
+sequenceDiagram
+  participant Renderer
+  participant Preload
+  participant Main
+
+  Renderer->>Preload: window.electronAPI.loadConfig()
+  Preload->>Main: ipcRenderer.invoke('load-config')
+  Main-->>Preload: config JSON
+  Preload-->>Renderer: config object
+
+  Renderer->>Preload: window.electronAPI.setClickThrough(true)
+  Preload->>Main: ipcRenderer.invoke('set-click-through', true)
+  Main-->>Preload: ack
+  Preload-->>Renderer: ack
+
+  Note over Renderer,Main: Engine control and telemetry go via ipc for privacy/autorun-safe logic

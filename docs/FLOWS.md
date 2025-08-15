@@ -95,3 +95,9 @@ Flow 6 — Tray-first / Headless mode (background engine + quick UI)
 ```
 
 Pick one or ask for a merged hybrid (e.g., Electron-native engine + Enhanced UI with hover-zen + tray control) and I will produce a concrete implementation plan and IPC APIs for that flow.
+
+# instructions
+let's add a welcome messaege, that the first time you use the app, it appears
+a translucent small tile, that explains hotkeys, modes, and controls. 3 simple centered
+big messages, disappeared with simple clicks.
+

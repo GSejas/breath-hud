@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="180" viewBox="0 0 600 180">
+  <style>
+    .label{font:14px sans-serif; fill:#222}
+    .phase{fill:#6ec1ff; stroke:#0b6fb2; stroke-width:2}
+    .hold{fill:#ffd57a; stroke:#bf8c2c; stroke-width:2}
+  </style>
+
+  <!-- Inhale (larger circle) -->
+  <g transform="translate(100,90)">
+    <circle class="phase" r="48" />
+    <text x="0" y="70" text-anchor="middle" class="label">Inhale (expand)</text>
+  </g>
+
+  <!-- Hold (medium circle) -->
+  <g transform="translate(300,90)">
+    <circle class="hold" r="34" />
+    <text x="0" y="70" text-anchor="middle" class="label">Hold</text>
+  </g>
+
+  <!-- Exhale (small circle) -->
+  <g transform="translate(500,90)">
+    <circle class="phase" r="22" opacity="0.95" />
+    <text x="0" y="70" text-anchor="middle" class="label">Exhale (contract)</text>
+  </g>
+
+  <!-- Legend -->
+  <text x="12" y="18" class="label">Breathing phases (visual reference)</text>
+</svg>

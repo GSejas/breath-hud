@@ -154,22 +154,14 @@
             color: white;
         }
         
-        /* Mode Controls - Absolutely positioned at bottom */
+        /* OLD Mode Controls - Hidden (replaced with new layout) */
         .mode-controls {
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 6px 12px;
-            gap: 12px;
-            border-radius: 12px;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            z-index: 3; /* Lower than status display */
-            -webkit-app-region: no-drag;
+            display: none !important;
+        }
+        
+        /* Hideable bottom bar functionality */
+        .mode-controls.hidden {
+            transform: translateY(100%);
         }
         
         .mode-btn {
@@ -237,6 +229,178 @@
             color: white;
         }
         
+        /* Pattern Controls Styling */
+        .pattern-controls {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 4px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .pattern-controls .mode-btn.small {
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            margin: 1px 0;
+        }
+        
+        /* Sequence status text styling */
+        #sequence-status {
+            font-size: 8px !important;
+            color: var(--theme-secondary) !important;
+            margin-top: 2px !important;
+            max-width: 120px;
+            text-align: center;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* New Control Layout Styling */
+        
+        /* Sequence Controls - Top-right, below main controls */
+        .sequence-controls {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            display: flex;
+            gap: 4px;
+            z-index: 9;
+            -webkit-app-region: no-drag;
+        }
+        
+        /* Shape Navigation - Side buttons */
+        .shape-navigation-left {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 8;
+            -webkit-app-region: no-drag;
+        }
+        
+        .shape-navigation-right {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 8;
+            -webkit-app-region: no-drag;
+        }
+        
+        /* Shape/Pattern Display - Bottom-center, compact */
+        .shape-pattern-display {
+            position: absolute;
+            bottom: 30px; /* 10% of 300px = 30px from bottom */
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 10px;
+            line-height: 1.3;
+            z-index: 7;
+            color: var(--theme-accent);
+            min-width: 100px;
+        }
+        
+        .shape-pattern-display div {
+            margin: 1px 0;
+        }
+        
+        #sequence-status {
+            font-size: 8px !important;
+            color: var(--theme-secondary) !important;
+            opacity: 0.8;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Mode Button - Bottom-right corner */
+        .mode-button-corner {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 8;
+            -webkit-app-region: no-drag;
+        }
+        
+        .mode-btn-compact {
+            width: 35px !important;
+            height: 18px !important;
+            font-size: 8px !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            border-radius: 9px !important;
+        }
+        
+        /* Auto-Fade System CSS */
+        
+        /* Default state - all controls visible on hover */
+        .hud-container:not(.pinned):not(.auto-faded):hover .enhanced-controls,
+        .hud-container:not(.pinned):not(.auto-faded):hover .sequence-controls,
+        .hud-container:not(.pinned):not(.auto-faded):hover .shape-navigation-left,
+        .hud-container:not(.pinned):not(.auto-faded):hover .shape-navigation-right,
+        .hud-container:not(.pinned):not(.auto-faded):hover .mode-button-corner {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Auto-faded state - controls hidden, background dimmed */
+        .hud-container.auto-faded {
+            background: rgba(0, 0, 0, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            transition: all 1s ease-out;
+        }
+        
+        .hud-container.auto-faded .enhanced-controls,
+        .hud-container.auto-faded .sequence-controls,
+        .hud-container.auto-faded .shape-navigation-left,
+        .hud-container.auto-faded .shape-navigation-right,
+        .hud-container.auto-faded .mode-button-corner {
+            opacity: 0;
+            transition: opacity 1s ease-out;
+        }
+        
+        .hud-container.auto-faded .breathing-shape,
+        .hud-container.auto-faded .breathing-canvas canvas,
+        .hud-container.auto-faded .breathing-shape-container {
+            opacity: 0.4;
+            filter: blur(0.5px);
+            transition: opacity 1s ease-out, filter 1s ease-out;
+        }
+        
+        .hud-container.auto-faded .shape-pattern-display {
+            opacity: 0.1;
+            transition: opacity 1s ease-out;
+        }
+        
+        .hud-container.auto-faded .enhanced-status {
+            opacity: 0.3;
+            transition: opacity 1s ease-out;
+        }
+        
+        /* Non-pinned default state - controls initially hidden */
+        .hud-container:not(.pinned):not(:hover) .enhanced-controls,
+        .hud-container:not(.pinned):not(:hover) .sequence-controls,
+        .hud-container:not(.pinned):not(:hover) .shape-navigation-left,
+        .hud-container:not(.pinned):not(:hover) .shape-navigation-right,
+        .hud-container:not(.pinned):not(:hover) .mode-button-corner {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Pinned state - override auto-fade, always show controls */
+        .hud-container.pinned .enhanced-controls,
+        .hud-container.pinned .sequence-controls,
+        .hud-container.pinned .shape-navigation-left,
+        .hud-container.pinned .shape-navigation-right,
+        .hud-container.pinned .mode-button-corner,
+        .hud-container.pinned .shape-pattern-display {
+            opacity: 1 !important;
+        }
+        
         /* Enhanced Status Display - Positioned below centered shape */
         .enhanced-status {
             position: absolute;
@@ -286,10 +450,47 @@
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--theme-primary), var(--theme-accent));
+            background: var(--theme-primary);
             width: 0%;
-            transition: width 0.1s ease;
+            transition: width 0.1s ease, background 0.3s ease;
             border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Phase-specific progress bar animations */
+        .progress-fill.inhale {
+            background: linear-gradient(90deg, var(--theme-primary), var(--theme-accent));
+        }
+
+        .progress-fill.hold {
+            background: var(--theme-accent);
+            box-shadow: 0 0 6px var(--theme-accent);
+        }
+
+        .progress-fill.exhale {
+            background: linear-gradient(90deg, var(--theme-accent), var(--theme-secondary));
+        }
+
+        .progress-fill.pause {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Progress bar glow effect during hold */
+        .progress-fill.hold::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: hold-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes hold-pulse {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
         }
         
         /* Breathing Shape Styling */
@@ -336,6 +537,11 @@
             transition: opacity 0.3s ease;
         }
         
+        /* Completely hide bottom bar in zen mode */
+        .zen-mode .mode-controls {
+            transform: translateY(100%);
+        }
+        
         /* Subtle hint that controls exist in zen mode */
         .zen-mode::before {
             content: '';
@@ -363,6 +569,11 @@
             z-index: 1000; /* Ensure they're on top */
         }
         
+        /* Bring back bottom bar on hover in zen mode */
+        .zen-mode:hover .mode-controls {
+            transform: translateY(0);
+        }
+        
         /* Always keep pin button accessible in zen mode */
         .zen-mode #pin-btn {
             opacity: 0.4;
@@ -387,6 +598,143 @@
             background: var(--theme-primary);
             color: white;
             border-color: var(--theme-accent);
+        }
+        
+        /* Selected shape styling */
+        .breathing-shape-container.selected {
+            border: 2px solid var(--theme-primary) !important;
+            box-shadow: 0 0 15px var(--theme-primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* SVG shape selection styling */
+        .breathing-shape.selected {
+            stroke: var(--theme-accent) !important;
+            stroke-width: 3 !important;
+            filter: drop-shadow(0 0 8px var(--theme-primary));
+        }
+
+        /* Edit mode cursor for canvas */
+        .edit-mode .breathing-canvas,
+        .edit-mode canvas {
+            cursor: grab;
+        }
+
+        .edit-mode .breathing-canvas:active,
+        .edit-mode canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Breathing canvas base styles */
+        .breathing-canvas,
+        canvas.breathing-canvas {
+            transition: filter 0.2s ease;
+        }
+
+        .edit-mode .breathing-canvas:hover,
+        .edit-mode canvas:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Breathing sliders styling */
+        .breathing-sliders {
+            flex-direction: column;
+            gap: 4px;
+            padding: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin-top: 4px;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+        }
+
+        .slider-group label {
+            min-width: 45px;
+            color: var(--theme-accent);
+            font-weight: 600;
+        }
+
+        .slider-group input[type="range"] {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--theme-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1px solid var(--theme-accent);
+        }
+
+        .slider-group input[type="range"]::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: var(--theme-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1px solid var(--theme-accent);
+        }
+
+        .slider-group span {
+            min-width: 30px;
+            color: var(--theme-secondary);
+            font-family: monospace;
+            font-size: 9px;
+        }
+        
+        /* Debug Console Styling */
+        .debug-console {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.8);
+            border-top: 1px solid var(--theme-primary);
+            border-radius: 0 0 20px 20px;
+            color: var(--hud-text);
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            z-index: 5;
+            display: none; /* Hidden by default */
+            overflow: hidden;
+        }
+        
+        .debug-header {
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--theme-accent);
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        #debug-output {
+            padding: 8px 12px;
+            height: calc(100% - 28px);
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+        
+        .debug-entry {
+            margin-bottom: 2px;
+            opacity: 0.9;
+        }
+        
+        .debug-entry:last-child {
+            color: var(--theme-accent);
+            opacity: 1;
         }
         
         .zen-mode:hover #pin-btn,
