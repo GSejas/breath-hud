@@ -1,498 +1,30 @@
 console.log('Enhanced HUD App starting...');
 
-// Import refactored modules
+// Import shared modules (Issue #1: Extract types and constants)
 import { BreathingSequenceManager } from './managers/sequence-manager';
 import { BREATHING_SEQUENCES } from '../shared/breathing-presets';
+import type {
+  BreathingShape,
+  BreathingPattern,
+  BreathingPhase,
+  BreathingSequence,
+  BreathingSequenceStep
+} from '../shared/types/breathing.types';
+import type { ThemeConfig } from '../shared/types/theme.types';
+import { BREATHING_SHAPES, BREATHING_PATTERNS, VISUAL_THEMES } from '../shared/constants';
 
-// Browser-compatible enhanced breathing system (no imports)
+// Import utility functions (Issue #2: Extract utility functions)
+import {
+  cubicEaseInOut,
+  lerp,
+  calculateBreathingValue,
+  getPhaseOpacity,
+  getPhaseColor,
+  isNostrilActive
+} from './utils';
 
-// Import config manager (will be bundled)
-// Note: In real implementation, this would be properly imported
-// For browser compatibility, the config manager is inlined below
-
-// Type definitions (inline)
-interface BreathingShape {
-  id: string;
-  name: string;
-  type: 'circle' | 'triangle' | 'square' | 'star' | 'heart' | 'lotus';
-  svgPath?: string;
-  description: string;
-}
-
-interface BreathingPattern {
-  id: string;
-  name: string;
-  type: 'relaxing' | 'active' | 'flow' | 'custom';
-  phases: BreathingPhase[];
-  duration: number;
-  isNostrilBreathing?: boolean;
-}
-
-interface BreathingPhase {
-  name: 'inhale' | 'hold' | 'exhale' | 'pause';
-  duration: number;
-  intensity: number;
-  nostril?: 'left' | 'right' | 'both';
-}
-
-interface BreathingSequenceStep {
-  pattern: BreathingPattern;
-  repetitions: number;
-  description: string;
-}
-
-interface BreathingSequence {
-  id: string;
-  name: string;
-  description: string;
-  steps: BreathingSequenceStep[];
-  loop: boolean;
-}
-
-interface ThemeConfig {
-  id: string;
-  name: string;
-  colors: {
-    primary: string;
-    secondary: string;
-    background: string;
-    accent: string;
-  };
-  effects: {
-    glow: boolean;
-    pulse: boolean;
-    gradient: boolean;
-  };
-}
-
-// Inline presets (browser-compatible)
-const BREATHING_SHAPES: BreathingShape[] = [
-  {
-    id: 'circle',
-    name: 'Circle',
-    type: 'circle',
-    description: 'Classic circular breathing'
-  },
-  {
-    id: 'triangle',
-    name: 'Triangle', 
-    type: 'triangle',
-    svgPath: 'M100,20 L180,160 L20,160 Z',
-    description: 'Sharp focus breathing'
-  },
-  {
-    id: 'square',
-    name: 'Square',
-    type: 'square', 
-    svgPath: 'M40,40 L160,40 L160,160 L40,160 Z',
-    description: 'Box breathing visualization'
-  },
-  {
-    id: 'star',
-    name: 'Star',
-    type: 'star',
-    svgPath: 'M100,20 L112,68 L160,68 L122,100 L135,148 L100,120 L65,148 L78,100 L40,68 L88,68 Z',
-    description: 'Energy breathing'
-  },
-  {
-    id: 'heart',
-    name: 'Heart',
-    type: 'heart',
-    svgPath: 'M100,160 C100,160 60,120 60,90 C60,70 80,50 100,60 C120,50 140,70 140,90 C140,120 100,160 100,160 Z',
-    description: 'Loving-kindness breathing'
-  }
-];
-
-const BREATHING_PATTERNS: BreathingPattern[] = [
-  {
-    id: 'zen-simple',
-    name: 'Zen',
-    type: 'relaxing',
-    duration: 8,
-    phases: [
-      { name: 'inhale', duration: 4, intensity: 0.5 },
-      { name: 'exhale', duration: 4, intensity: 0.2 }
-    ]
-  },
-  {
-    id: 'box-breathing',
-    name: 'Box',
-    type: 'active',
-    duration: 16,
-    phases: [
-      { name: 'inhale', duration: 4, intensity: 0.7 },
-      { name: 'hold', duration: 4, intensity: 1.0 },
-      { name: 'exhale', duration: 4, intensity: 0.3 },
-      { name: 'pause', duration: 4, intensity: 0.0 }
-    ]
-  },
-  {
-    id: 'relaxing-478',
-    name: '4-7-8',
-    type: 'relaxing',
-    duration: 19,
-    phases: [
-      { name: 'inhale', duration: 4, intensity: 0.8 },
-      { name: 'hold', duration: 7, intensity: 1.0 },
-      { name: 'exhale', duration: 8, intensity: 0.4 }
-    ]
-  },
-  {
-    id: 'rest-breath',
-    name: 'Rest',
-    type: 'relaxing',
-    duration: 12,
-    phases: [
-      { name: 'inhale', duration: 3, intensity: 0.3 },
-      { name: 'exhale', duration: 5, intensity: 0.2 },
-      { name: 'pause', duration: 4, intensity: 0.0 }
-    ]
-  },
-  {
-    id: 'hold-release',
-    name: 'Hold & Release',
-    type: 'active',
-    duration: 20,
-    phases: [
-      { name: 'inhale', duration: 6, intensity: 0.9 },
-      { name: 'hold', duration: 10, intensity: 1.0 },
-      { name: 'exhale', duration: 4, intensity: 0.1 }
-    ]
-  },
-  {
-    id: 'normal-breath',
-    name: 'Natural',
-    type: 'flow',
-    duration: 6,
-    phases: [
-      { name: 'inhale', duration: 3, intensity: 0.6 },
-      { name: 'exhale', duration: 3, intensity: 0.3 }
-    ]
-  },
-  {
-    id: 'triangle-444',
-    name: '4-4-4',
-    type: 'active',
-    duration: 12,
-    phases: [
-      { name: 'inhale', duration: 4, intensity: 0.7 },
-      { name: 'hold', duration: 4, intensity: 1.0 },
-      { name: 'exhale', duration: 4, intensity: 0.3 }
-    ]
-  },
-  {
-    id: 'simple-48',
-    name: '4-8',
-    type: 'relaxing',
-    duration: 12,
-    phases: [
-      { name: 'inhale', duration: 4, intensity: 0.6 },
-      { name: 'exhale', duration: 8, intensity: 0.3 }
-    ]
-  },
-  {
-    id: 'alternate-nostril',
-    name: 'Nostril',
-    type: 'flow',
-    duration: 24,
-    isNostrilBreathing: true,
-    phases: [
-      { name: 'inhale', duration: 4, intensity: 0.7, nostril: 'left' },
-      { name: 'hold', duration: 2, intensity: 1.0, nostril: 'both' },
-      { name: 'exhale', duration: 4, intensity: 0.3, nostril: 'right' },
-      { name: 'pause', duration: 2, intensity: 0.2, nostril: 'right' },
-      { name: 'inhale', duration: 4, intensity: 0.7, nostril: 'right' },
-      { name: 'hold', duration: 2, intensity: 1.0, nostril: 'both' },
-      { name: 'exhale', duration: 4, intensity: 0.3, nostril: 'left' },
-      { name: 'pause', duration: 2, intensity: 0.2, nostril: 'left' }
-    ]
-  }
-];
-
-// BreathingSequenceManager and BREATHING_SEQUENCES now imported from modules
-
-/*
-// Commented out original complex sequences - kept for reference
-const BREATHING_SEQUENCES_COMPLEX: BreathingSequence[] = [
-  {
-    id: 'training-sequence',
-    name: 'Training Session',
-    description: '25 box breaths, rest, hold & release, natural breathing, repeat',
-    loop: true,
-    steps: [
-      {
-        pattern: BREATHING_PATTERNS.find(p => p.id === 'box-breathing')!,
-        repetitions: 25,
-        description: '25 Box Breathing rounds (4-4-4-4)'
-      },
-      {
-        pattern: BREATHING_PATTERNS.find(p => p.id === 'rest-breath')!,
-        repetitions: 5,
-        description: '5 Rest breaths'
-      },
-      {
-        pattern: BREATHING_PATTERNS.find(p => p.id === 'hold-release')!,
-        repetitions: 10,
-        description: '10 Hold & Release rounds'
-      },
-      {
-        pattern: BREATHING_PATTERNS.find(p => p.id === 'normal-breath')!,
-        repetitions: 15,
-        description: '15 Natural breathing rounds'
-      }
-    ]
-  },
-  {
-    id: 'relaxation-sequence',
-    name: 'Deep Relaxation',
-    description: '4-7-8 breathing with rest periods',
-    loop: true,
-    steps: [
-      {
-        pattern: BREATHING_PATTERNS.find(p => p.id === 'relaxing-478')!,
-        repetitions: 20,
-        description: '20 rounds of 4-7-8 breathing'
-      },
-      {
-        pattern: BREATHING_PATTERNS.find(p => p.id === 'rest-breath')!,
-        repetitions: 8,
-        description: '8 Rest breaths'
-      }
-    ]
-  },
-  {
-    id: 'focus-sequence',
-    name: 'Focus Training',
-    description: 'Box breathing for concentration',
-    loop: true,
-    steps: [
-      {
-        pattern: BREATHING_PATTERNS.find(p => p.id === 'box-breathing')!,
-        repetitions: 50,
-        description: '50 Box Breathing rounds for focus'
-      },
-      {
-        pattern: BREATHING_PATTERNS.find(p => p.id === 'normal-breath')!,
-        repetitions: 10,
-        description: '10 Natural recovery breaths'
-      }
-    ]
-  }
-];
-*/
-
-const VISUAL_THEMES: ThemeConfig[] = [
-  {
-    id: 'ocean',
-    name: 'Ocean',
-    colors: {
-      primary: 'rgba(74, 144, 226, 0.8)',
-      secondary: 'rgba(100, 200, 255, 0.6)',
-      background: 'rgba(0, 50, 100, 0.1)',
-      accent: 'rgba(150, 220, 255, 1.0)'
-    },
-    effects: { glow: true, pulse: true, gradient: true }
-  },
-  {
-    id: 'forest',
-    name: 'Forest',
-    colors: {
-      primary: 'rgba(76, 175, 80, 0.8)',
-      secondary: 'rgba(139, 195, 74, 0.6)',
-      background: 'rgba(27, 94, 32, 0.1)',
-      accent: 'rgba(200, 230, 201, 1.0)'
-    },
-    effects: { glow: true, pulse: false, gradient: true }
-  },
-  {
-    id: 'sunset',
-    name: 'Sunset',
-    colors: {
-      primary: 'rgba(255, 112, 67, 0.8)',
-      secondary: 'rgba(255, 183, 77, 0.6)',
-      background: 'rgba(191, 54, 12, 0.1)',
-      accent: 'rgba(255, 224, 178, 1.0)'
-    },
-    effects: { glow: true, pulse: true, gradient: true }
-  }
-];
-
-// Breathing Sequence Manager
-// BreathingSequenceManager now imported from separate module
-
-// Tile Scale Controller for expandable functionality
-class TileScaleController {
-  private currentScale: number = 1.0;
-  private readonly MIN_SCALE = 0.5;
-  private readonly MAX_SCALE = 3.0;
-  private readonly SCALE_STEP = 0.1;
-  private container: HTMLElement;
-  
-  constructor(container: HTMLElement) {
-    this.container = container;
-    this.loadSavedScale();
-    this.applyScale();
-  }
-  
-  public scaleUp(): void {
-    const newScale = Math.min(this.MAX_SCALE, this.currentScale + this.SCALE_STEP);
-    this.setScale(newScale);
-  }
-  
-  public scaleDown(): void {
-    const newScale = Math.max(this.MIN_SCALE, this.currentScale - this.SCALE_STEP);
-    this.setScale(newScale);
-  }
-  
-  public resetScale(): void {
-    this.setScale(1.0);
-  }
-  
-  public setScale(scale: number): void {
-    this.currentScale = Math.max(this.MIN_SCALE, Math.min(this.MAX_SCALE, scale));
-    this.applyScale();
-    this.saveScale();
-    
-    console.log(`Tile scaled to: ${(this.currentScale * 100).toFixed(0)}%`);
-  }
-  
-  public getScale(): number {
-    return this.currentScale;
-  }
-  
-  public setPresetScale(preset: number): void {
-    // Preset scales: 1=0.5x, 2=0.7x, 3=1.0x, 4=1.3x, 5=1.6x, 6=2.0x, 7=2.3x, 8=2.6x, 9=3.0x
-    const presets = [0.5, 0.7, 1.0, 1.3, 1.6, 2.0, 2.3, 2.6, 3.0];
-    if (preset >= 1 && preset <= 9) {
-      this.setScale(presets[preset - 1]);
-    }
-  }
-  
-  private applyScale(): void {
-    if (this.container) {
-      this.container.style.setProperty('--hud-scale', this.currentScale.toString());
-      this.container.classList.add('scalable');
-      
-      // Update the scale for counter-scaling fixed controls
-      this.container.style.setProperty('--inverse-scale', (1 / this.currentScale).toString());
-    }
-  }
-  
-  private saveScale(): void {
-    try {
-      localStorage.setItem('breathingHudScale', this.currentScale.toString());
-    } catch (error) {
-      console.warn('Failed to save scale preference:', error);
-    }
-  }
-  
-  private loadSavedScale(): void {
-    try {
-      const saved = localStorage.getItem('breathingHudScale');
-      if (saved) {
-        const scale = parseFloat(saved);
-        if (!isNaN(scale) && scale >= this.MIN_SCALE && scale <= this.MAX_SCALE) {
-          this.currentScale = scale;
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to load saved scale:', error);
-    }
-  }
-  
-  public getScaleInfo(): string {
-    const percentage = Math.round(this.currentScale * 100);
-    const size = Math.round(300 * this.currentScale);
-    return `${percentage}% (${size}×${size}px)`;
-  }
-}
-
-// Auto-Fade Controller for hover behavior
-class AutoFadeController {
-  private fadeTimer: NodeJS.Timeout | null = null;
-  private container: HTMLElement;
-  private readonly FADE_DELAY = 3000; // 3 seconds
-  
-  constructor(container: HTMLElement) {
-    this.container = container;
-    this.setupFadeListeners();
-  }
-  
-  private setupFadeListeners() {
-    // Show on hover
-    this.container.addEventListener('mouseenter', () => {
-      if (!this.isPinned()) {
-        this.showInterface();
-        this.clearFadeTimer();
-      }
-    });
-    
-    // Start fade timer on mouse leave
-    this.container.addEventListener('mouseleave', () => {
-      if (!this.isPinned()) {
-        this.startFadeTimer();
-      }
-    });
-    
-    // Cancel fade if controls are clicked
-    this.container.addEventListener('click', (e) => {
-      if (e.target instanceof HTMLButtonElement) {
-        this.clearFadeTimer();
-        this.showInterface();
-        // Start new timer after click
-        setTimeout(() => {
-          if (!this.isPinned()) {
-            this.startFadeTimer();
-          }
-        }, 100);
-      }
-    });
-  }
-  
-  private startFadeTimer() {
-    this.clearFadeTimer();
-    this.fadeTimer = setTimeout(() => {
-      this.fadeInterface();
-    }, this.FADE_DELAY);
-  }
-  
-  private clearFadeTimer() {
-    if (this.fadeTimer) {
-      clearTimeout(this.fadeTimer);
-      this.fadeTimer = null;
-    }
-  }
-  
-  private showInterface() {
-    this.container.classList.remove('auto-faded');
-  }
-  
-  private fadeInterface() {
-    if (!this.isPinned()) {
-      this.container.classList.add('auto-faded');
-    }
-  }
-  
-  private isPinned(): boolean {
-    return this.container.classList.contains('pinned');
-  }
-  
-  // Public method to force show (for debugging)
-  public forceShow() {
-    this.clearFadeTimer();
-    this.showInterface();
-  }
-  
-  // Public method to update pin status
-  public updatePinStatus(isPinned: boolean) {
-    if (isPinned) {
-      this.clearFadeTimer();
-      this.showInterface();
-    } else {
-      this.startFadeTimer();
-    }
-  }
-}
+// Import controllers (Issue #3: Extract existing controllers)
+import { ScaleController, AutoFadeController } from './controllers';
 
 // Enhanced Breathing Engine (browser-compatible)
 class EnhancedBreathingEngine {
@@ -825,7 +357,7 @@ class EnhancedBreathingEngine {
     const phaseProgress = Math.min(phaseElapsed / phaseDurationMs, 1.0);
 
     const intensity = currentPhase.intensity * this.intensity;
-    const breathingValue = this.calculateBreathingValue(currentPhase, phaseProgress, intensity);
+    const breathingValue = this.animate_calculateBreathingValue(currentPhase, phaseProgress, intensity);
 
     this.animateShape(breathingValue, currentPhase, phaseProgress);
 
@@ -859,59 +391,31 @@ class EnhancedBreathingEngine {
     this.animationId = requestAnimationFrame(() => this.animate());
   }
 
-  private calculateBreathingValue(phase: BreathingPhase, progress: number, intensity: number): number {
-    let targetValue: number;
-    
-    // Calculate target value based on phase using configurable parameters
-    switch (phase.name) {
-      case 'inhale':
-        // Smooth cubic easing from base to inhale max
-        const inhaleEase = this.cubicEaseInOut(progress);
-        targetValue = this.baseSize + (inhaleEase * (this.inhaleMax - this.baseSize));
-        break;
-      case 'hold':
-        // Stay at inhale max during hold
-        targetValue = this.inhaleMax;
-        break;
-      case 'exhale':
-        // Smooth cubic easing from inhale max to exhale min
-        const exhaleEase = this.cubicEaseInOut(progress);
-        targetValue = this.inhaleMax - (exhaleEase * (this.inhaleMax - this.exhaleMin));
-        break;
-      case 'pause':
-        // Stay at exhale min during pause
-        targetValue = this.exhaleMin;
-        break;
-      default:
-        targetValue = this.baseSize;
-        break;
-    }
+  private animate_calculateBreathingValue(phase: BreathingPhase, progress: number, intensity: number): number {
+    // Use imported calculateBreathingValue utility
+    const value = calculateBreathingValue(
+      phase,
+      progress,
+      this.baseSize,
+      this.inhaleMax,
+      this.exhaleMin
+    );
 
     // Apply reduced motion: if enabled, reduce animation smoothness
     if (this.reduceMotion) {
       // For reduced motion, use simple linear interpolation with dampened movement
-      const dampedTarget = this.baseSize + ((targetValue - this.baseSize) * 0.3); // Reduce movement by 70%
-      return this.lerp(this.previousBreathingValue, dampedTarget, 0.1);
+      const dampedTarget = this.baseSize + ((value - this.baseSize) * 0.3); // Reduce movement by 70%
+      return lerp(this.previousBreathingValue, dampedTarget, 0.1);
     }
 
     // Normal smooth transition with velocity-based lerping
-    const velocityFactor = Math.abs(targetValue - this.previousBreathingValue) * 0.05;
+    const velocityFactor = Math.abs(value - this.previousBreathingValue) * 0.05;
     const lerpFactor = Math.max(0.02, Math.min(0.15, 0.08 + velocityFactor));
     
-    const smoothValue = this.lerp(this.previousBreathingValue, targetValue, lerpFactor);
+    const smoothValue = lerp(this.previousBreathingValue, value, lerpFactor);
     this.previousBreathingValue = smoothValue;
     
     return smoothValue;
-  }
-
-  private cubicEaseInOut(t: number): number {
-    return t < 0.5 
-      ? 4 * t * t * t 
-      : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  }
-
-  private lerp(start: number, end: number, factor: number): number {
-    return start + (end - start) * factor;
   }
 
   private animateShape(breathingValue: number, phase: BreathingPhase, progress: number) {
@@ -1106,7 +610,7 @@ class TileControlSystem {
   private breathingEngine: EnhancedBreathingEngine | null = null;
   private sequenceManager!: BreathingSequenceManager;
   private autoFadeController!: AutoFadeController;
-  private scaleController!: TileScaleController;
+  private scaleController!: ScaleController;
   private isPinned = false;
   private currentMode: 'zen' | 'basic' | 'advanced' | 'edit' = 'basic';
   private currentShapeIndex = 0;
@@ -1152,7 +656,7 @@ class TileControlSystem {
     // Initialize auto-fade and scale controllers after all UI is set up
     if (this.container) {
       this.autoFadeController = new AutoFadeController(this.container);
-      this.scaleController = new TileScaleController(this.container);
+      this.scaleController = new ScaleController(this.container);
     }
 
     console.log('Enhanced Tile Control System initialized');
