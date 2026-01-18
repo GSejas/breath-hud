@@ -15,12 +15,14 @@ export interface BreathingPattern {
   phases: BreathingPhase[];
   description: string;
   duration: number; // total cycle time in seconds
+  isNostrilBreathing?: boolean; // indicates this pattern uses nostril visualization
 }
 
 export interface BreathingPhase {
   name: 'inhale' | 'hold' | 'exhale' | 'pause';
   duration: number; // in seconds
   intensity: number; // 0-1 scale
+  nostril?: 'left' | 'right' | 'both'; // for nostril breathing patterns
 }
 
 export interface ThemeConfig {
@@ -72,4 +74,19 @@ export interface UIState {
   isControlsVisible: boolean;
   currentMode: 'zen' | 'basic' | 'advanced' | 'config';
   isTransitioning: boolean;
+}
+
+export interface BreathingSequenceStep {
+  pattern: BreathingPattern;
+  repetitions: number;
+  description: string;
+}
+
+export interface BreathingSequence {
+  id: string;
+  name: string;
+  description: string;
+  steps: BreathingSequenceStep[];
+  totalDuration: number; // in seconds
+  loop: boolean;
 }

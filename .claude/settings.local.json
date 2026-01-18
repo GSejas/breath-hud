@@ -21,7 +21,12 @@
       "Bash(move QUICK_GUIDE.md docslegacy )",
       "Bash(move TESTING.md docslegacy )",
       "Bash(move USER_GUIDE.md docslegacy)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npm test)",
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(npm test:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": [],

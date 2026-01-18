@@ -1,4 +1,4 @@
-import { BreathingShape, BreathingPattern, ThemeConfig } from './meditation-types';
+import { BreathingShape, BreathingPattern, ThemeConfig, BreathingSequence } from './meditation-types';
 
 // Breathing Shapes Collection
 export const BREATHING_SHAPES: BreathingShape[] = [
@@ -106,6 +106,47 @@ export const BREATHING_PATTERNS: BreathingPattern[] = [
       { name: 'inhale', duration: 4, intensity: 0.5 },
       { name: 'exhale', duration: 4, intensity: 0.2 }
     ]
+  },
+  {
+    id: 'triangle-444',
+    name: '4-4-4 Triangle',
+    type: 'active',
+    description: 'Equal timing breathing - inhale, hold, exhale',
+    duration: 12,
+    phases: [
+      { name: 'inhale', duration: 4, intensity: 0.7 },
+      { name: 'hold', duration: 4, intensity: 1.0 },
+      { name: 'exhale', duration: 4, intensity: 0.3 }
+    ]
+  },
+  {
+    id: 'simple-48',
+    name: '4-8 Simple',
+    type: 'relaxing',
+    description: 'Simple in/out focus with extended exhale',
+    duration: 12,
+    phases: [
+      { name: 'inhale', duration: 4, intensity: 0.6 },
+      { name: 'exhale', duration: 8, intensity: 0.3 }
+    ]
+  },
+  {
+    id: 'alternate-nostril',
+    name: 'Alternate Nostril',
+    type: 'flow',
+    description: 'Nadi Shodhana - alternate nostril breathing for balance',
+    duration: 24,
+    isNostrilBreathing: true,
+    phases: [
+      { name: 'inhale', duration: 4, intensity: 0.7, nostril: 'left' },
+      { name: 'hold', duration: 2, intensity: 1.0, nostril: 'both' },
+      { name: 'exhale', duration: 4, intensity: 0.3, nostril: 'right' },
+      { name: 'pause', duration: 2, intensity: 0.2, nostril: 'right' },
+      { name: 'inhale', duration: 4, intensity: 0.7, nostril: 'right' },
+      { name: 'hold', duration: 2, intensity: 1.0, nostril: 'both' },
+      { name: 'exhale', duration: 4, intensity: 0.3, nostril: 'left' },
+      { name: 'pause', duration: 2, intensity: 0.2, nostril: 'left' }
+    ]
   }
 ];
 
@@ -185,5 +226,22 @@ export const VISUAL_THEMES: ThemeConfig[] = [
       pulse: false,
       gradient: false
     }
+  }
+];
+
+export const BREATHING_SEQUENCES: BreathingSequence[] = [
+  {
+    id: 'focus-session',
+    name: 'Focus Session',
+    description: '25 Box Breathing rounds (4-4-4-4)',
+    steps: [
+      {
+        pattern: BREATHING_PATTERNS.find(p => p.id === 'box-breathing')!,
+        repetitions: 25,
+        description: 'Box breathing for focus'
+      }
+    ],
+    totalDuration: 400, // 25 * 16 seconds
+    loop: false
   }
 ];

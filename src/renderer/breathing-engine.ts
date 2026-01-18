@@ -1,4 +1,4 @@
-import { BreathingShape, BreathingPattern, BreathingPhase, MeditationConfig } from '../shared/meditation-types';
+import { BreathingShape, BreathingPattern, BreathingPhase, MeditationConfig, ThemeConfig } from '../shared/meditation-types';
 
 export class EnhancedBreathingEngine {
   private canvas: HTMLElement;
@@ -11,6 +11,7 @@ export class EnhancedBreathingEngine {
   private config: MeditationConfig;
   private currentShape: BreathingShape;
   private currentPattern: BreathingPattern;
+  private currentTheme?: ThemeConfig;
   private svgElement?: SVGElement;
   
   private onPhaseChange?: (phase: BreathingPhase, progress: number) => void;
@@ -47,6 +48,11 @@ export class EnhancedBreathingEngine {
     this.applyConfigToShape();
   }
 
+  updateTheme(theme: ThemeConfig) {
+    this.currentTheme = theme;
+    this.applyThemeToShape();
+  }
+
   private createShapeElement() {
     // Clear existing shape
     this.canvas.innerHTML = '';
@@ -58,7 +64,57 @@ export class EnhancedBreathingEngine {
     svg.setAttribute('viewBox', '0 0 200 200');
     svg.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);';
     
+    // Create gradient definitions
+    const defs = this.createGradientDefinitions();
+    svg.appendChild(defs);
+    
     // Create shape element
+    const shapeElement = this.createShapeGeometry();
+    
+    // Apply initial styling
+    this.applyShapeStyles(shapeElement);
+    
+    svg.appendChild(shapeElement);
+    this.canvas.appendChild(svg);
+    this.svgElement = svg;
+    
+    this.applyConfigToShape();
+  }
+
+  private createGradientDefinitions(): SVGDefsElement {
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    
+    // Radial gradient for solid shapes
+    const radialGradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+    radialGradient.setAttribute('id', 'breathingRadialGradient');
+    radialGradient.setAttribute('cx', '50%');
+    radialGradient.setAttribute('cy', '50%');
+    radialGradient.setAttribute('r', '50%');
+    
+    const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop1.setAttribute('offset', '0%');
+    stop1.setAttribute('stop-color', 'var(--theme-accent)');
+    stop1.setAttribute('stop-opacity', '0.9');
+    
+    const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop2.setAttribute('offset', '70%');
+    stop2.setAttribute('stop-color', 'var(--theme-primary)');
+    stop2.setAttribute('stop-opacity', '0.6');
+    
+    const stop3 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop3.setAttribute('offset', '100%');
+    stop3.setAttribute('stop-color', 'var(--theme-primary)');
+    stop3.setAttribute('stop-opacity', '0.1');
+    
+    radialGradient.appendChild(stop1);
+    radialGradient.appendChild(stop2);
+    radialGradient.appendChild(stop3);
+    defs.appendChild(radialGradient);
+    
+    return defs;
+  }
+
+  private createShapeGeometry(): SVGElement {
     let shapeElement: SVGElement;
     
     switch (this.currentShape.type) {
@@ -76,17 +132,23 @@ export class EnhancedBreathingEngine {
         break;
     }
     
-    // Apply base styling
-    shapeElement.setAttribute('fill', 'none');
-    shapeElement.setAttribute('stroke', 'var(--shape-primary)');
-    shapeElement.setAttribute('stroke-width', '2');
     shapeElement.setAttribute('class', 'breathing-shape');
+    return shapeElement;
+  }
+
+  private applyShapeStyles(shapeElement: SVGElement) {
+    const isGradientMode = this.currentTheme?.effects.gradient ?? false;
     
-    svg.appendChild(shapeElement);
-    this.canvas.appendChild(svg);
-    this.svgElement = svg;
-    
-    this.applyConfigToShape();
+    if (isGradientMode) {
+      shapeElement.setAttribute('fill', 'url(#breathingRadialGradient)');
+      shapeElement.setAttribute('stroke', 'var(--theme-accent)');
+      shapeElement.setAttribute('stroke-width', '2.5');
+      shapeElement.setAttribute('filter', 'drop-shadow(0 0 8px var(--theme-primary))');
+    } else {
+      shapeElement.setAttribute('fill', 'none');
+      shapeElement.setAttribute('stroke', 'var(--theme-primary)');
+      shapeElement.setAttribute('stroke-width', '3.5');
+    }
   }
 
   private applyConfigToShape() {
@@ -99,6 +161,15 @@ export class EnhancedBreathingEngine {
     // Apply theme colors via CSS variables
     this.canvas.style.setProperty('--shape-primary', 'var(--theme-primary)');
     this.canvas.style.setProperty('--shape-secondary', 'var(--theme-secondary)');
+  }
+
+  private applyThemeToShape() {
+    if (!this.svgElement || !this.currentTheme) return;
+    
+    const shapeElement = this.svgElement.querySelector('.breathing-shape') as SVGElement;
+    if (shapeElement) {
+      this.applyShapeStyles(shapeElement);
+    }
   }
 
   start() {

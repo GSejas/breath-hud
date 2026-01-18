@@ -1,4 +1,4 @@
-import { EnhancedBreathingEngine } from './enhanced-breathing-engine';
+import { EnhancedBreathingEngine } from './breathing-engine';
 import { BreathingShape, BreathingPattern, ThemeConfig, MeditationConfig, UIState } from '../shared/meditation-types';
 import { BREATHING_SHAPES, BREATHING_PATTERNS, VISUAL_THEMES } from '../shared/breathing-presets';
 
@@ -465,6 +465,11 @@ class TileControlSystem {
     this.container.classList.toggle('theme-glow', theme.effects.glow);
     this.container.classList.toggle('theme-pulse', theme.effects.pulse);
     this.container.classList.toggle('theme-gradient', theme.effects.gradient);
+    
+    // Update breathing engine with new theme
+    if (this.breathingEngine) {
+      this.breathingEngine.updateTheme(theme);
+    }
   }
 
   private updateModeDisplay() {

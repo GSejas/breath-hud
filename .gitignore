@@ -9,6 +9,7 @@ node_modules/
 .vscode/
 *.swp
 *.swo
+.idea/
 
 # OS
 .DS_Store
@@ -20,3 +21,11 @@ npm-debug.log*
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Test coverage
+coverage/
+
+# Environment
+.env
+.env.local
+.env.*.local
