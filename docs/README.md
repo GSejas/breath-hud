@@ -36,6 +36,17 @@ docs/
     └── USER_GUIDE.md
 ```
 
+## Product & Design
+
+- [Minimal Editor Design](planning/MINIMAL_EDITOR_DESIGN.md) - MVP intent, use cases, views, wireframes, state model, and acceptance criteria
+- [Minimal Editor Component Contracts](planning/MINIMAL_EDITOR_COMPONENT_CONTRACTS.md) - data model, component APIs, events, adapter mapping, and test contract
+- [Minimal Editor Runtime ADR](planning/MINIMAL_EDITOR_IMPLEMENTATION_ADR.md) - runtime boundary, persistence lifecycle, tray ownership, and verification limits
+- [Minimal Editor Visual Index](planning/diagrams/README.md) - linked ASCII, SVG, Mermaid, layout, state, flow, and contract visuals
+- [Nostril Breathing UI ADR](planning/NOSTRIL_BREATHING_UI_ADR.md) - runtime progress contract, visual hierarchy, states, and accessibility decisions
+- [HUD UI/UX Composition and Flow](planning/HUD_UI_UX_COMPOSITION.md) - mental models, hierarchy rules, flows, state/size/mode matrices, and open composition gaps
+- [Audio Cues Design](planning/AUDIO_CUES_DESIGN.md) - bounded phase-cue architecture, recording handoff, accessibility rules, and verification matrix
+- [HUD View Review & Redesign](planning/HUD_REDESIGN_REVIEW.md) - current-view audit, proposed hierarchy, onboarding, modes, and future implementation boundary
+
 ## Documentation Features
 
 ### Segmented Structure

@@ -312,6 +312,10 @@ This document defines the comprehensive criteria that must be met before any fea
 
 ## 10. Specific Component Criteria
 
+The EditPanel and EditModeController criteria below are retained as legacy issue
+checklists. The production editor entry point is the separate SystemEditor
+window documented in `docs/planning/MINIMAL_EDITOR_DESIGN.md`.
+
 ### 10.1 EditPanel Component (Issue #12)
 - [ ] **Functionality**
   - Panel creates at correct position (top: 20px, right: 20px)

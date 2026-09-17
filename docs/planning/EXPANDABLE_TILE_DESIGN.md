@@ -1,5 +1,9 @@
 # Expandable Tile System Design
 
+> Status: historical scaling proposal. The production HUD does not include
+> side shape-navigation controls; shape selection belongs in the separate
+> editor. Any future scaling work must preserve that boundary.
+
 ## Overview
 Implement tile expansion functionality where users can scale the entire HUD while maintaining usability and proportion.
 

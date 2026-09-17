@@ -1,0 +1,26 @@
+stateDiagram-v2
+    [*] --> Closed
+    Closed --> Loading: open editor
+    Loading --> Ready: preview hydrated
+    Loading --> PreviewError: preview failed
+    Ready --> Ready: change draft / switch state
+    Ready --> Saving: save
+    Saving --> Saved: persistence success
+    Saving --> SaveError: persistence failure
+    SaveError --> Saving: retry save
+    Saved --> Ready: continue editing
+    Ready --> ResetConfirm: reset defaults
+    ResetConfirm --> Ready: confirm
+    ResetConfirm --> Ready: dismiss
+    Ready --> Closed: cancel / close
+    Saved --> Closed: close
+    PreviewError --> Ready: retry / continue editing
+
+    state Ready {
+      [*] --> SuccessPreview
+      SuccessPreview --> LoadingPreview: inspect loading
+      LoadingPreview --> EmptyPreview: inspect empty
+      EmptyPreview --> ErrorPreview: inspect error
+      ErrorPreview --> DisabledPreview: inspect disabled
+      DisabledPreview --> SuccessPreview: inspect ready
+    }

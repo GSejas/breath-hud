@@ -72,6 +72,34 @@
             opacity: 0.4;
             background: var(--theme-background);
         }
+
+        /* Editor-selected runtime frame treatments. */
+        #hud-container.frame-glass {
+            backdrop-filter: blur(10px);
+        }
+
+        #hud-container.frame-outline {
+            border-width: 2px;
+            border-color: var(--theme-accent);
+            border-radius: 12px;
+            background: transparent;
+            backdrop-filter: none;
+            box-shadow: none;
+        }
+
+        #hud-container.frame-soft {
+            border: 0;
+            border-radius: 34px;
+            background: var(--theme-background);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, .28);
+        }
+
+        #hud-container.frame-quiet {
+            border-color: rgba(255, 255, 255, .14);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .025);
+            box-shadow: none;
+        }
         
         /* Breathing canvas - spans ENTIRE window for true centering */
         #breathing-canvas {
@@ -109,6 +137,12 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            align-items: stretch;
+            padding: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            background: rgba(0, 0, 0, 0.34);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
             z-index: 10;
             -webkit-app-region: no-drag;
         }
@@ -120,10 +154,10 @@
         }
         
         .control-btn {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
-            min-height: 32px;
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
             border-radius: 50%;
             border: 1px solid rgba(255, 255, 255, 0.3);
             background: var(--control-bg);
@@ -138,10 +172,10 @@
         }
         
         .control-btn.small {
-            width: 28px;
-            height: 28px;
-            min-width: 28px;
-            min-height: 28px;
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
             font-size: 10px;
         }
         
@@ -163,6 +197,12 @@
         }
         
         .control-btn.pinned {
+            background: var(--theme-primary);
+            border-color: var(--theme-accent);
+            color: white;
+        }
+
+        .control-btn.active {
             background: var(--theme-primary);
             border-color: var(--theme-accent);
             color: white;
@@ -290,25 +330,6 @@
             -webkit-app-region: no-drag;
         }
         
-        /* Shape Navigation - Side buttons */
-        .shape-navigation-left {
-            position: absolute;
-            left: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 8;
-            -webkit-app-region: no-drag;
-        }
-        
-        .shape-navigation-right {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 8;
-            -webkit-app-region: no-drag;
-        }
-        
         /* Tooltip styling - Apple-inspired */
         .tooltip {
             position: absolute;
@@ -409,9 +430,9 @@
         
         .mode-btn-compact {
             width: 48px !important;
-            height: 32px !important;
+            height: 44px !important;
             min-width: 48px !important;
-            min-height: 32px !important;
+            min-height: 44px !important;
             font-size: 9px !important;
             font-weight: 600 !important;
             text-transform: uppercase !important;
@@ -423,13 +444,9 @@
         /* Default state - all controls visible on hover */
         .hud-container:not(.pinned):not(.auto-faded):hover .enhanced-controls,
         .hud-container:not(.pinned):not(.auto-faded):hover .sequence-controls,
-        .hud-container:not(.pinned):not(.auto-faded):hover .shape-navigation-left,
-        .hud-container:not(.pinned):not(.auto-faded):hover .shape-navigation-right,
         .hud-container:not(.pinned):not(.auto-faded):hover .mode-button-corner,
         .hud-container:not(.pinned):not(.auto-faded):focus-within .enhanced-controls,
         .hud-container:not(.pinned):not(.auto-faded):focus-within .sequence-controls,
-        .hud-container:not(.pinned):not(.auto-faded):focus-within .shape-navigation-left,
-        .hud-container:not(.pinned):not(.auto-faded):focus-within .shape-navigation-right,
         .hud-container:not(.pinned):not(.auto-faded):focus-within .mode-button-corner {
             opacity: 1;
             visibility: visible;
@@ -446,8 +463,6 @@
         
         .hud-container.auto-faded:not(:focus-within) .enhanced-controls,
         .hud-container.auto-faded:not(:focus-within) .sequence-controls,
-        .hud-container.auto-faded:not(:focus-within) .shape-navigation-left,
-        .hud-container.auto-faded:not(:focus-within) .shape-navigation-right,
         .hud-container.auto-faded:not(:focus-within) .mode-button-corner {
             opacity: 0;
             visibility: hidden;
@@ -476,8 +491,6 @@
         /* Non-pinned default state - controls initially hidden */
         .hud-container:not(.pinned):not(:hover):not(:focus-within) .enhanced-controls,
         .hud-container:not(.pinned):not(:hover):not(:focus-within) .sequence-controls,
-        .hud-container:not(.pinned):not(:hover):not(:focus-within) .shape-navigation-left,
-        .hud-container:not(.pinned):not(:hover):not(:focus-within) .shape-navigation-right,
         .hud-container:not(.pinned):not(:hover):not(:focus-within) .mode-button-corner {
             opacity: 0;
             visibility: hidden;
@@ -488,8 +501,6 @@
         /* Pinned state - override auto-fade, always show controls */
         .hud-container.pinned .enhanced-controls,
         .hud-container.pinned .sequence-controls,
-        .hud-container.pinned .shape-navigation-left,
-        .hud-container.pinned .shape-navigation-right,
         .hud-container.pinned .mode-button-corner,
         .hud-container.pinned .shape-pattern-display {
             opacity: 1 !important;
@@ -497,20 +508,16 @@
             pointer-events: auto;
         }
         
-        /* Enhanced Status Display - Centered exactly with breathing shape */
+        /* Status projection zones: cue inside the breathing field, progress
+           below the shape and above the lower control row. */
         .enhanced-status {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); /* Perfect center alignment with breathing shape */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 260px;
             pointer-events: none;
             z-index: 10; /* Above breathing shape */
-            width: 200px; /* Fixed width */
-            height: 160px; /* Same height as breathing shape container */
         }
         
         /* Breathing shape container - EXACTLY centered */
@@ -527,6 +534,10 @@
         }
         
         #phase-indicator {
+            position: absolute;
+            top: 54px;
+            left: 0;
+            right: 0;
             font-size: 20px; /* Larger for center prominence */
             font-weight: 700;
             color: var(--theme-accent);
@@ -534,56 +545,164 @@
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8); /* Strong visibility against shape */
             letter-spacing: 1.5px;
             text-align: center;
-            margin: 0; /* Remove margins for perfect centering */
-        }
-        
-        #progress-bar {
-            display: none; /* Hide progress bar to show only phase text */
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: var(--theme-primary);
-            width: 0%;
-            transition: width 0.1s ease, background 0.3s ease;
-            border-radius: 2px;
-            position: relative;
-            overflow: hidden;
+            margin: 0;
         }
 
-        /* Phase-specific progress bar animations */
-        .progress-fill.inhale {
-            background: linear-gradient(90deg, var(--theme-primary), var(--theme-accent));
-        }
-
-        .progress-fill.hold {
-            background: var(--theme-accent);
-            box-shadow: 0 0 6px var(--theme-accent);
-        }
-
-        .progress-fill.exhale {
-            background: linear-gradient(90deg, var(--theme-accent), var(--theme-secondary));
-        }
-
-        .progress-fill.pause {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Progress bar glow effect during hold */
-        .progress-fill.hold::after {
-            content: '';
+        .breathing-status__instruction {
             position: absolute;
-            top: 0;
+            top: 103px;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            animation: hold-pulse 2s ease-in-out infinite;
+            min-height: 16px;
+            color: var(--theme-secondary);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-align: center;
         }
 
-        @keyframes hold-pulse {
-            0%, 100% { opacity: 0; }
-            50% { opacity: 1; }
+        .breathing-status__instruction.is-redundant,
+        .preview-instruction.is-redundant {
+            visibility: hidden;
+        }
+
+        .nostril-indicator {
+            position: absolute;
+            top: 126px;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 20px;
+            margin: 2px 0;
+        }
+
+        /* The hidden attribute is part of the status view contract. Keep it
+           authoritative even though the visible state uses display:flex. */
+        .nostril-indicator[hidden] {
+            display: none;
+        }
+
+        .nostril-left,
+        .nostril-right {
+            min-width: 38px;
+            padding: 3px 6px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-align: center;
+            transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .nostril-left.active,
+        .nostril-right.active {
+            border-color: var(--theme-primary);
+            background: color-mix(in srgb, var(--theme-primary), transparent 55%);
+            color: white;
+            box-shadow: 0 0 10px color-mix(in srgb, var(--theme-primary), transparent 55%);
+        }
+
+        .nostril-left.inactive,
+        .nostril-right.inactive {
+            background: rgba(100, 100, 100, 0.16);
+        }
+
+        .stage-progress {
+            position: absolute;
+            top: 198px;
+            left: 40px;
+            display: flex;
+            width: 180px;
+            height: 5px;
+            gap: 2px;
+            margin: 0;
+            overflow: hidden;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .stage-progress__segment {
+            position: relative;
+            flex: 0 0 var(--stage-width, 0%);
+            min-width: 2px;
+            overflow: hidden;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        .stage-progress__segment::after {
+            content: '';
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: var(--segment-progress, 0%);
+            background: var(--theme-primary);
+            transition: width 0.1s linear, background 0.2s ease;
+        }
+
+        .stage-progress__segment.complete::after {
+            width: 100%;
+            background: var(--theme-accent);
+        }
+
+        .stage-progress__segment.current::after {
+            background: var(--theme-primary);
+        }
+
+        .stage-progress__segment.current.hold::after {
+            background: var(--theme-accent);
+        }
+
+        .stage-progress__segment.current.exhale::after {
+            background: var(--theme-secondary);
+        }
+
+        .stage-progress__segment.current.pause::after {
+            background: rgba(255, 255, 255, 0.45);
+        }
+
+        .breathing-status__summary {
+            position: absolute;
+            top: 213px;
+            left: 0;
+            right: 0;
+            min-height: 12px;
+            color: var(--theme-secondary);
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+            opacity: 0.85;
+            text-align: center;
+        }
+
+        .enhanced-status[data-state="loading"] .stage-progress,
+        .enhanced-status[data-state="empty"] .stage-progress,
+        .enhanced-status[data-state="error"] .stage-progress,
+        .enhanced-status[data-state="disabled"] .stage-progress {
+            opacity: 0.25;
+        }
+
+        .enhanced-status[data-state="error"] .breathing-status__phase {
+            color: #ff9b98;
+        }
+
+        .enhanced-status[data-state="disabled"] {
+            opacity: 0.55;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
         }
         
         /* Breathing Shape Styling */
@@ -674,61 +793,6 @@
             z-index: 1001;
         }
         
-        /* Edit mode styling */
-        .edit-mode .breathing-shape-container {
-            cursor: pointer;
-            border: 2px dashed var(--theme-accent);
-            border-radius: 10px;
-            transition: all 0.2s ease;
-        }
-        
-        .edit-mode .breathing-shape-container:hover {
-            border-color: var(--theme-primary);
-            background: rgba(255, 255, 255, 0.05);
-        }
-        
-        .edit-mode #edit-btn.active {
-            background: var(--theme-primary);
-            color: white;
-            border-color: var(--theme-accent);
-        }
-        
-        /* Selected shape styling */
-        .breathing-shape-container.selected {
-            border: 2px solid var(--theme-primary) !important;
-            box-shadow: 0 0 15px var(--theme-primary);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* SVG shape selection styling */
-        .breathing-shape.selected {
-            stroke: var(--theme-accent) !important;
-            stroke-width: 3 !important;
-            filter: drop-shadow(0 0 8px var(--theme-primary));
-        }
-
-        /* Edit mode cursor for canvas */
-        .edit-mode .breathing-canvas,
-        .edit-mode canvas {
-            cursor: grab;
-        }
-
-        .edit-mode .breathing-canvas:active,
-        .edit-mode canvas:active {
-            cursor: grabbing;
-        }
-
-        /* Breathing canvas base styles */
-        .breathing-canvas,
-        canvas.breathing-canvas {
-            transition: filter 0.2s ease;
-        }
-
-        .edit-mode .breathing-canvas:hover,
-        .edit-mode canvas:hover {
-            filter: brightness(1.1);
-        }
-
         /* Breathing sliders styling */
         .breathing-sliders {
             flex-direction: column;
@@ -879,8 +943,8 @@
             }
 
             .control-btn {
-                width: 20px;
-                height: 20px;
+                width: 44px;
+                height: 44px;
                 font-size: 10px;
             }
 
@@ -1098,77 +1162,6 @@
             }
         }
 
-        /* Nostril Indicator Styling */
-        .nostril-indicator {
-            display: flex;
-            gap: 30px;
-            margin-top: 4px;
-            justify-content: center;
-        }
-
-        .nostril-left,
-        .nostril-right {
-            font-size: 12px;
-            font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            min-width: 20px;
-            text-align: center;
-        }
-
-        .nostril-left.active,
-        .nostril-right.active {
-            background: var(--theme-primary);
-            color: white;
-            box-shadow: 0 0 15px var(--theme-primary);
-            animation: nostril-glow 1s ease-in-out infinite;
-        }
-
-        .nostril-left.inactive,
-        .nostril-right.inactive {
-            background: rgba(100, 100, 100, 0.3);
-            color: rgba(255, 255, 255, 0.3);
-        }
-
-        @keyframes nostril-glow {
-            0%, 100% {
-                box-shadow: 0 0 10px var(--theme-primary);
-            }
-            50% {
-                box-shadow: 0 0 20px var(--theme-accent);
-            }
-        }
-
-        /* Nostril breathing shape split effect */
-        .nostril-breathing .breathing-canvas {
-            position: relative;
-        }
-
-        .nostril-breathing .breathing-canvas::before,
-        .nostril-breathing .breathing-canvas::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 50%;
-            height: 100%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .nostril-breathing .breathing-canvas::before {
-            left: 0;
-            background: linear-gradient(90deg, var(--theme-primary), transparent);
-            opacity: 0.1;
-        }
-
-        .nostril-breathing .breathing-canvas::after {
-            right: 0;
-            background: linear-gradient(-90deg, var(--theme-secondary), transparent);
-            opacity: 0.1;
-        }
-
         /* Hide in-out display in auto-faded state */
         .hud-container.auto-faded .in-out-display {
             opacity: 0.2;
@@ -1196,8 +1189,16 @@
             overflow: hidden;
         }
 
+        body.editor-open {
+            background: var(--editor-bg);
+            color: var(--editor-text);
+            overflow: hidden;
+            user-select: auto;
+            -webkit-app-region: no-drag;
+        }
+
         body.editor-open > #hud-container {
-            visibility: hidden;
+            display: none;
         }
 
         #editor-shell {
@@ -1252,7 +1253,7 @@
         .editor-icon-button,
         .editor-secondary-button,
         .editor-primary-button {
-            min-height: 40px;
+            min-height: 44px;
             border: 1px solid var(--editor-line-strong);
             border-radius: 9px;
             color: var(--editor-text);
@@ -1260,7 +1261,7 @@
             font: inherit;
             cursor: pointer;
         }
-        .editor-icon-button { width: 40px; font-size: 18px; }
+        .editor-icon-button { width: 44px; font-size: 18px; }
         .editor-secondary-button, .editor-primary-button { padding: 0 16px; font-size: 13px; font-weight: 650; }
         .editor-primary-button { border-color: transparent; color: #081218; background: var(--theme-accent); }
         .editor-icon-button:hover, .editor-secondary-button:hover { background: var(--editor-surface-raised); }
@@ -1272,7 +1273,7 @@
         .editor-main { display: grid; grid-template-columns: 188px minmax(0, 1fr); min-height: 0; }
         .editor-sidebar { padding: 24px 16px; border-right: 1px solid var(--editor-line); background: #11151d; }
         .editor-sidebar-label { margin: 0 10px 10px; color: var(--editor-subtle); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
-        .editor-nav-item { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 42px; padding: 0 10px; border: 0; border-radius: 8px; color: var(--editor-muted); background: transparent; font: inherit; font-size: 13px; text-align: left; }
+        .editor-nav-item { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 10px; border: 0; border-radius: 8px; color: var(--editor-muted); background: transparent; font: inherit; font-size: 13px; text-align: left; }
         .editor-nav-item.is-active { color: var(--editor-text); background: var(--editor-surface-raised); box-shadow: inset 2px 0 var(--theme-accent); }
         .editor-nav-index { width: 18px; color: var(--editor-subtle); font-size: 11px; }
         .editor-help { margin: 28px 10px 0; color: var(--editor-subtle); font-size: 11px; line-height: 1.5; }
@@ -1300,8 +1301,25 @@
         .preview-hud.frame-outline { border: 2px solid var(--preview-accent); background: transparent; border-radius: 12px; }
         .preview-hud.frame-soft { border: 0; background: var(--preview-background); border-radius: 34px; box-shadow: 0 18px 40px rgba(0,0,0,.28); }
         .preview-hud.frame-quiet { border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.025); border-radius: 50%; }
-        .preview-shape { width: 98px; height: 98px; border: 2px solid var(--preview-accent); border-radius: 50%; box-shadow: 0 0 22px color-mix(in srgb, var(--preview-primary), transparent 35%); opacity: calc(.55 + var(--preview-intensity) * .45); }
-        .preview-hud::after { content: "INHALE"; position: absolute; bottom: 30px; font-size: 10px; letter-spacing: .18em; }
+         .preview-shape { position: absolute; top: 34px; width: 82px; height: 82px; border: 2px solid var(--preview-accent); border-radius: 50%; box-shadow: 0 0 22px color-mix(in srgb, var(--preview-primary), transparent 35%); opacity: calc(.55 + var(--preview-intensity) * .45); cursor: grab; touch-action: none; --preview-x: 0px; --preview-y: 0px; --preview-rotation: 0deg; --preview-scale: 1; transform: translate(var(--preview-x), var(--preview-y)) rotate(var(--preview-rotation)) scale(var(--preview-scale)); }
+        .preview-shape:focus-visible { outline: 2px solid var(--editor-focus); outline-offset: 4px; }
+        .preview-shape:active { cursor: grabbing; }
+        .preview-shape[data-shape="triangle"] { border-radius: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+        .preview-shape[data-shape="square"] { border-radius: 8px; }
+         .preview-shape[data-shape="star"] { border-radius: 30%; --preview-rotation: 45deg; }
+         .preview-shape[data-shape="heart"] { border-radius: 50% 50% 45% 45%; --preview-rotation: -45deg; --preview-scale: .82; }
+        .preview-status { position: absolute; right: 18px; bottom: 23px; left: 18px; display: grid; gap: 4px; text-align: center; }
+        .preview-phase { color: var(--editor-text); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+        .preview-instruction { color: var(--editor-muted); font-size: 10px; }
+        .preview-nostrils { display: inline-flex; justify-content: center; gap: 5px; margin-top: 1px; }
+        .preview-nostrils[hidden] { display: none; }
+        .preview-nostril { padding: 2px 5px; border: 1px solid var(--editor-line); border-radius: 999px; color: var(--editor-subtle); font-size: 8px; letter-spacing: .08em; }
+        .preview-nostril.is-active { border-color: var(--preview-accent); color: var(--preview-accent); background: var(--preview-background); }
+        .preview-stage-progress { display: flex; gap: 3px; height: 4px; margin-top: 2px; }
+        .preview-stage-segment { flex: var(--stage-width, 1); min-width: 3px; border-radius: 99px; background: var(--editor-line-strong); }
+        .preview-stage-segment.is-complete, .preview-stage-segment.is-current { background: var(--preview-accent); }
+        .preview-stage-segment.is-current { background: linear-gradient(to right, var(--preview-accent) 50%, var(--editor-line-strong) 50%); }
+        .preview-summary { color: var(--editor-subtle); font-family: ui-monospace, monospace; font-size: 9px; }
         .preview-meta { position: absolute; bottom: 16px; left: 18px; color: var(--editor-muted); font-size: 11px; }
         .preview-state { position: absolute; z-index: 2; display: none; width: min(220px, 72%); padding: 18px; border: 1px solid var(--editor-line-strong); border-radius: 10px; background: rgba(15, 19, 26, .94); color: var(--editor-text); text-align: center; font-size: 12px; box-shadow: 0 14px 32px rgba(0,0,0,.35); }
         .editor-preview[data-state="loading"] .preview-state, .editor-preview[data-state="empty"] .preview-state, .editor-preview[data-state="error"] .preview-state, .editor-preview[data-state="disabled"] .preview-state { display: block; }
@@ -1312,14 +1330,14 @@
         .preview-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 2px 0; }
         .preview-toolbar-label { color: var(--editor-muted); font-size: 11px; }
         .editor-state-options { display: flex; gap: 4px; flex-wrap: wrap; }
-        .editor-state-option { min-height: 28px; padding: 0 8px; border: 1px solid var(--editor-line); border-radius: 6px; color: var(--editor-muted); background: transparent; font: inherit; font-size: 10px; cursor: pointer; }
+        .editor-state-option { min-height: 44px; padding: 0 10px; border: 1px solid var(--editor-line); border-radius: 6px; color: var(--editor-muted); background: transparent; font: inherit; font-size: 10px; cursor: pointer; }
         .editor-state-option.is-selected { border-color: var(--theme-accent); color: var(--editor-text); background: var(--theme-background); }
 
         .editor-controls { padding: 20px; }
         .editor-control-section + .editor-control-section { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--editor-line); }
         .editor-control-section h3 { margin: 0 0 12px; color: var(--editor-muted); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
         .editor-frame-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .editor-frame-option { display: grid; gap: 7px; padding: 9px; border: 1px solid var(--editor-line); border-radius: 9px; color: var(--editor-muted); background: #121720; font: inherit; font-size: 10px; text-align: left; cursor: pointer; }
+         .editor-frame-option { display: grid; gap: 7px; min-height: 44px; padding: 9px; border: 1px solid var(--editor-line); border-radius: 9px; color: var(--editor-muted); background: #121720; font: inherit; font-size: 10px; text-align: left; cursor: pointer; }
         .editor-frame-option.is-selected { border-color: var(--theme-accent); color: var(--editor-text); background: var(--theme-background); box-shadow: inset 0 0 0 1px var(--theme-accent); }
         .frame-swatch { height: 34px; border: 1px solid var(--editor-muted); border-radius: 7px; background: rgba(255,255,255,.05); }
         .editor-frame-option[data-frame="outline"] .frame-swatch { border-width: 2px; background: transparent; border-radius: 3px; }
@@ -1329,11 +1347,18 @@
         .editor-field + .editor-field { margin-top: 16px; }
         .editor-field-head { display: flex; justify-content: space-between; gap: 12px; color: var(--editor-text); font-size: 12px; }
         .editor-field-value { color: var(--editor-muted); font-family: ui-monospace, monospace; }
-        .editor-select { width: 100%; height: 40px; padding: 0 11px; border: 1px solid var(--editor-line-strong); border-radius: 8px; color: var(--editor-text); background: #11161e; font: inherit; font-size: 12px; }
-        .editor-range { width: 100%; height: 4px; accent-color: var(--theme-accent); cursor: pointer; }
+        .editor-select { width: 100%; height: 44px; padding: 0 11px; border: 1px solid var(--editor-line-strong); border-radius: 8px; color: var(--editor-text); background: #11161e; font: inherit; font-size: 12px; }
+        .editor-range { width: 100%; height: 44px; accent-color: var(--theme-accent); cursor: pointer; }
         .editor-range:disabled { cursor: not-allowed; opacity: .35; }
         .editor-position-note { margin: 16px 0 0; padding: 10px 12px; border: 1px solid var(--editor-line); border-radius: 8px; color: var(--editor-muted); font-size: 11px; line-height: 1.4; }
         .editor-position-note strong { color: var(--editor-text); font-weight: 600; }
+
+        .editor-preview[data-state="error"] .preview-phase,
+        .editor-preview[data-state="error"] .preview-instruction { color: var(--editor-danger); }
+        .editor-preview[data-state="empty"] .preview-status,
+        .editor-preview[data-state="disabled"] .preview-status { opacity: .55; }
+        .editor-preview[data-state="loading"] .preview-stage-segment.is-current { animation: editor-progress-pulse 1.2s ease-in-out infinite; }
+        @keyframes editor-progress-pulse { 50% { opacity: .45; } }
 
         @media (max-width: 760px) {
             .editor-topbar, .editor-footer { padding: 0 16px; }
@@ -1345,13 +1370,14 @@
             .editor-grid { grid-template-columns: 1fr; }
             .editor-preview { min-height: 300px; }
             .editor-footer { gap: 10px; }
-            .editor-footer .editor-secondary-button { display: none; }
+            .editor-footer .editor-secondary-button { min-width: 44px; }
             .editor-save-status { min-width: 0; margin-right: auto; }
         }
 
         @media (prefers-reduced-motion: reduce) {
             .preview-hud, .editor-preview *, #editor-shell * { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
         }
+
     </style>
 </head>
 <body>
@@ -1392,7 +1418,7 @@
                     <p class="editor-sidebar-label">Workspace</p>
                     <button type="button" class="editor-nav-item is-active"><span class="editor-nav-index">01</span>Appearance</button>
                     <button type="button" class="editor-nav-item"><span class="editor-nav-index">02</span>Motion</button>
-                    <p class="editor-help">Changes apply to the live overlay as you work. Save when the preview feels right.</p>
+                        <p class="editor-help">Preview changes as you work. Save when the overlay feels right.</p>
                 </aside>
                 <main class="editor-content">
                     <div class="editor-page-header">
@@ -1404,24 +1430,34 @@
                     </div>
                     <div class="editor-grid">
                         <section class="editor-card" aria-labelledby="preview-heading">
-                            <div class="editor-card-header"><h2 id="preview-heading">Preview</h2><span id="editor-shape-name">Circle</span></div>
+                            <div class="editor-card-header"><h2 id="preview-heading">Preview</h2><span id="editor-card-shape-name">Circle</span></div>
                             <div class="editor-preview-wrap">
                                 <div class="editor-preview" id="editor-preview" data-state="success">
                                     <div class="preview-grid" aria-hidden="true"></div>
                                     <div class="preview-hud frame-glass" id="editor-preview-frame" aria-label="Live HUD preview">
-                                        <div class="preview-shape" aria-hidden="true"></div>
+                                        <div class="preview-shape" id="editor-preview-shape" data-shape="circle" role="img" tabindex="0" aria-label="Circle preview shape. Use arrow keys to move."></div>
+                                        <div class="preview-status" aria-live="polite">
+                                            <div class="preview-phase" id="editor-preview-phase">Inhale</div>
+                                            <div class="preview-instruction" id="editor-preview-instruction">Inhale</div>
+                                            <div class="preview-nostrils" id="editor-preview-nostrils" hidden aria-label="Active nostril">
+                                                <span class="preview-nostril" id="editor-preview-left-nostril">LEFT</span>
+                                                <span class="preview-nostril" id="editor-preview-right-nostril">RIGHT</span>
+                                            </div>
+                                            <div class="preview-stage-progress" id="editor-stage-progress" role="progressbar" aria-label="Breathing cycle progress" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0.5" aria-valuetext="Stage 1 of 2"></div>
+                                            <div class="preview-summary" id="editor-preview-summary">Stage 1 of 2 · 4s</div>
+                                        </div>
                                     </div>
                                     <div class="preview-state" aria-live="polite"><span data-preview-message>Ready to breathe</span></div>
-                                    <div class="preview-meta"><span id="editor-pattern-name">Zen</span> · <span id="editor-shape-type">circle</span></div>
+                                    <div class="preview-meta"><span id="editor-preview-pattern-name">Zen</span> · <span id="editor-preview-shape-name">Circle</span></div>
                                 </div>
                                 <div class="preview-toolbar">
                                     <span class="preview-toolbar-label">Preview state</span>
                                     <div class="editor-state-options" role="radiogroup" aria-label="Preview state">
-                                        <button type="button" class="editor-state-option" data-preview-state="loading" role="radio" aria-checked="false">Loading</button>
-                                        <button type="button" class="editor-state-option" data-preview-state="empty" role="radio" aria-checked="false">Empty</button>
-                                        <button type="button" class="editor-state-option" data-preview-state="error" role="radio" aria-checked="false">Error</button>
-                                        <button type="button" class="editor-state-option is-selected" data-preview-state="success" role="radio" aria-checked="true">Ready</button>
-                                        <button type="button" class="editor-state-option" data-preview-state="disabled" role="radio" aria-checked="false">Disabled</button>
+                                            <button type="button" class="editor-state-option" data-preview-state="loading" role="radio" aria-checked="false" tabindex="-1">Loading</button>
+                                            <button type="button" class="editor-state-option" data-preview-state="empty" role="radio" aria-checked="false" tabindex="-1">Empty</button>
+                                            <button type="button" class="editor-state-option" data-preview-state="error" role="radio" aria-checked="false" tabindex="-1">Error</button>
+                                            <button type="button" class="editor-state-option is-selected" data-preview-state="success" role="radio" aria-checked="true" tabindex="0">Ready</button>
+                                            <button type="button" class="editor-state-option" data-preview-state="disabled" role="radio" aria-checked="false" tabindex="-1">Disabled</button>
                                     </div>
                                 </div>
                             </div>
@@ -1432,14 +1468,16 @@
                                 <div class="editor-control-section">
                                     <h3>Frame</h3>
                                     <div class="editor-frame-grid" role="radiogroup" aria-label="HUD frame style">
-                                        <button type="button" class="editor-frame-option is-selected" data-frame="glass" role="radio" aria-checked="true"><span class="frame-swatch" aria-hidden="true"></span>Glass</button>
-                                        <button type="button" class="editor-frame-option" data-frame="outline" role="radio" aria-checked="false"><span class="frame-swatch" aria-hidden="true"></span>Outline</button>
-                                        <button type="button" class="editor-frame-option" data-frame="soft" role="radio" aria-checked="false"><span class="frame-swatch" aria-hidden="true"></span>Soft</button>
-                                        <button type="button" class="editor-frame-option" data-frame="quiet" role="radio" aria-checked="false"><span class="frame-swatch" aria-hidden="true"></span>Quiet</button>
+                                        <button type="button" class="editor-frame-option is-selected" data-frame="glass" role="radio" aria-checked="true" tabindex="0"><span class="frame-swatch" aria-hidden="true"></span>Glass</button>
+                                        <button type="button" class="editor-frame-option" data-frame="outline" role="radio" aria-checked="false" tabindex="-1"><span class="frame-swatch" aria-hidden="true"></span>Outline</button>
+                                        <button type="button" class="editor-frame-option" data-frame="soft" role="radio" aria-checked="false" tabindex="-1"><span class="frame-swatch" aria-hidden="true"></span>Soft</button>
+                                        <button type="button" class="editor-frame-option" data-frame="quiet" role="radio" aria-checked="false" tabindex="-1"><span class="frame-swatch" aria-hidden="true"></span>Quiet</button>
                                     </div>
                                 </div>
                                 <div class="editor-control-section">
                                     <h3>Appearance</h3>
+                                    <div class="editor-field"><label class="editor-field-head" for="editor-shape"><span>Shape</span><span class="editor-field-value" id="editor-shape-type">circle</span></label><select class="editor-select" id="editor-shape"><option value="circle">Circle</option></select></div>
+                                    <div class="editor-field"><label class="editor-field-head" for="editor-pattern"><span>Pattern</span><span class="editor-field-value" id="editor-pattern-type">Zen</span></label><select class="editor-select" id="editor-pattern"><option value="zen-simple">Zen</option></select></div>
                                     <div class="editor-field"><label class="editor-field-head" for="editor-theme"><span>Theme</span><span class="editor-field-value" id="editor-position">0, 0</span></label><select class="editor-select" id="editor-theme"><option value="ocean">Ocean</option><option value="forest">Forest</option><option value="sunset">Sunset</option><option value="moonlight">Moonlight</option><option value="minimal">Minimal</option></select></div>
                                     <div class="editor-field"><label class="editor-field-head" for="editor-intensity"><span>Intensity</span><span class="editor-field-value" id="editor-intensity-value">70%</span></label><input class="editor-range" id="editor-intensity" type="range" min="0.1" max="1" step="0.1" value="0.7"></div>
                                 </div>
@@ -1449,7 +1487,7 @@
                                     <div class="editor-field"><label class="editor-field-head" for="editor-inhale"><span>Inhale maximum</span><span class="editor-field-value" id="editor-inhale-value">1.00</span></label><input class="editor-range" id="editor-inhale" type="range" min="0.6" max="1.8" step="0.05" value="1"></div>
                                     <div class="editor-field"><label class="editor-field-head" for="editor-exhale"><span>Exhale minimum</span><span class="editor-field-value" id="editor-exhale-value">0.40</span></label><input class="editor-range" id="editor-exhale" type="range" min="0.1" max="0.8" step="0.05" value="0.4"></div>
                                     <div class="editor-field"><label class="editor-field-head" for="editor-size"><span>HUD size</span><span class="editor-field-value" id="editor-size-value">300px</span></label><input class="editor-range" id="editor-size" type="range" min="240" max="600" step="40" value="300"></div>
-                                    <p class="editor-position-note"><strong id="editor-pattern-name">Zen</strong> · <span id="editor-shape-name">Circle</span> · drag the shape in the overlay or use arrow keys to fine-tune its position.</p>
+                                    <p class="editor-position-note"><strong id="editor-position-pattern-name">Zen</strong> · <span id="editor-position-shape-name">Circle</span> · drag the shape in the overlay or use arrow keys to fine-tune its position.</p>
                                 </div>
                             </div>
                         </section>
@@ -1462,7 +1500,7 @@
             </footer>
         </section>
     </div>
-    
+
     <script src="./app.js"></script>
 </body>
 </html>

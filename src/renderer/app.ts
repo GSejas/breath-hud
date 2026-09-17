@@ -6,10 +6,10 @@ import { BREATHING_SEQUENCES } from '../shared/breathing-presets';
 import type {
   BreathingShape,
   BreathingPattern,
-  BreathingPhase,
   BreathingSequence,
-  BreathingSequenceStep
+  BreathingSequenceStep,
 } from '../shared/types/breathing.types';
+import type { EditorDraft, EditorFrame } from '../shared/types/editor.types';
 import type { ThemeConfig } from '../shared/types/theme.types';
 import { BREATHING_SHAPES, BREATHING_PATTERNS, VISUAL_THEMES } from '../shared/constants';
 
@@ -25,6 +25,9 @@ import {
 
 // Import controllers (Issue #3: Extract existing controllers)
 import { AutoFadeController } from './controllers';
+import { BreathingStatusView } from './ui/breathing-status';
+import { SystemEditor } from './ui/system-editor';
+import { AudioCueService } from './services/audio-cue-service';
 
 // Import breathing engine
 import { EnhancedBreathingEngine } from './engines/enhanced-breathing-engine';
@@ -47,6 +50,10 @@ function readIndex(value: unknown, length: number, fallback = 0): number {
 
 type HudMode = 'zen' | 'basic' | 'advanced';
 
+function isEditorFrame(value: unknown): value is EditorFrame {
+  return value === 'glass' || value === 'outline' || value === 'soft' || value === 'quiet';
+}
+
 // Main Tile Control System (browser-compatible)
 class TileControlSystem {
   private breathingEngine: EnhancedBreathingEngine | null = null;
@@ -60,16 +67,9 @@ class TileControlSystem {
   private currentPatternIndex = 0;
   private currentSequenceIndex = 0;
   private currentThemeIndex = 0;
-  private scale = 1.0;
+  private currentFrame: EditorFrame = 'glass';
   private intensity = 0.7;
-  private isEditMode = false;
-  private selectedShapeElement: SVGElement | null = null;
   private shapePosition = { x: 0, y: 0 }; // Relative position from center
-  private editModeScale = 1; // Keep edit mode readable without resizing the whole HUD
-  private isDragging = false;
-  private dragOffset = { x: 0, y: 0 };
-  private currentSvgElement: SVGElement | null = null;
-  private currentCanvasElement: HTMLCanvasElement | null = null;
   private hudSize = 300;
   private readonly minHudSize = 240;
   private readonly maxHudSize = 600;
@@ -83,6 +83,10 @@ class TileControlSystem {
   private container: HTMLElement | null = null;
   private breathingCanvas: HTMLElement | null = null;
   private debugConsole: HTMLElement | null = null;
+  private breathingStatusView: BreathingStatusView | null = null;
+  private fallbackEditor: SystemEditor | null = null;
+  private readonly audioCueService = new AudioCueService();
+  private audioEnabled = false;
 
   async initialize() {
     console.log('Initializing Enhanced Tile Control System...');
@@ -92,8 +96,9 @@ class TileControlSystem {
     this.setupSequenceCallbacks();
     
     this.setupUIElements();
-    this.loadUserConfig(); // Load user feature flags
     this.loadConfig(); // Load saved configuration
+    this.audioCueService.setConfig({ enabled: this.audioEnabled, volume: 1 });
+    this.updateAudioButton();
     this.setMode(this.currentMode);
     const savedHudSize = this.readSavedHudSize();
     if (Number.isFinite(savedHudSize)) {
@@ -105,6 +110,7 @@ class TileControlSystem {
     }
     this.detectReducedMotionPreference(); // Check OS settings
     this.applyTheme(VISUAL_THEMES[this.currentThemeIndex]);
+    this.applyFrame(this.currentFrame);
     this.initializeBreathingEngine();
     this.setupEventListeners();
     this.setupKeyboardShortcuts();
@@ -185,12 +191,15 @@ class TileControlSystem {
 
     const controlPanel = document.createElement('div');
     controlPanel.className = 'enhanced-controls';
+    controlPanel.setAttribute('role', 'toolbar');
+    controlPanel.setAttribute('aria-label', 'HUD controls');
     controlPanel.innerHTML = `
       <div class="control-row">
-        <button type="button" id="edit-btn" class="control-btn" title="Edit Mode" aria-label="Open edit mode" aria-pressed="false">✏️</button>
+        <button type="button" id="audio-btn" class="control-btn" title="Turn sound on" aria-label="Turn sound on" aria-pressed="false"><span aria-hidden="true">&#x1F507;</span></button>
+        <button type="button" id="edit-btn" class="control-btn" title="Open minimal editor" aria-label="Open minimal editor" aria-pressed="false">✏️</button>
         <button type="button" id="theme-btn" class="control-btn" title="Cycle Theme" aria-label="Change theme">🎨</button>
         <button type="button" id="pin-btn" class="control-btn" title="Pin/Unpin HUD" aria-label="Pin HUD" aria-pressed="false">📌</button>
-        <button type="button" id="close-btn" class="control-btn" title="Close HUD" aria-label="Close HUD">✕</button>
+        <button type="button" id="close-btn" class="control-btn" title="Hide HUD" aria-label="Hide HUD">✕</button>
       </div>
       <div class="control-row advanced-controls" style="display: none;">
         <button type="button" id="size-down-btn" class="control-btn small" title="Smaller" aria-label="Make HUD smaller">🔽</button>
@@ -212,10 +221,6 @@ class TileControlSystem {
           <input type="range" id="exhale-slider" aria-label="Exhale minimum size" min="0.1" max="0.8" step="0.05" value="0.4">
         </div>
       </div>
-      <div class="control-row edit-controls" style="display: none;">
-        <button type="button" id="save-config-btn" class="control-btn small" title="Save Config" aria-label="Save configuration">💾</button>
-        <button type="button" id="reset-config-btn" class="control-btn small" title="Reset Config" aria-label="Reset configuration">🔄</button>
-      </div>
     `;
     
     this.container.appendChild(controlPanel);
@@ -233,21 +238,7 @@ class TileControlSystem {
       <button type="button" id="sequence-next-btn" class="control-btn small" title="Next Sequence" aria-label="Choose next sequence">⏭️</button>
     `;
     
-    // 2. Shape Navigation (left side - between Q1/Q3)
-    const shapeNavLeft = document.createElement('div');
-    shapeNavLeft.className = 'shape-navigation-left';
-    shapeNavLeft.innerHTML = `
-      <button type="button" id="shape-prev-btn" class="control-btn" title="Previous Shape" aria-label="Previous breathing shape">◀</button>
-    `;
-    
-    // 3. Shape Navigation (right side - between Q2/Q4) 
-    const shapeNavRight = document.createElement('div');
-    shapeNavRight.className = 'shape-navigation-right';
-    shapeNavRight.innerHTML = `
-      <button type="button" id="shape-next-btn" class="control-btn" title="Next Shape" aria-label="Next breathing shape">▶</button>
-    `;
-    
-    // 4. Shape/Pattern Display (bottom-center, compact)
+    // 2. Shape/Pattern Display (bottom-center, compact)
     const shapePatternDisplay = document.createElement('div');
     shapePatternDisplay.className = 'shape-pattern-display';
     shapePatternDisplay.innerHTML = `
@@ -256,7 +247,7 @@ class TileControlSystem {
       <div id="sequence-status" role="status" aria-live="polite">Sequence: Off</div>
     `;
     
-    // 5. Mode Button (bottom-right corner)
+    // 3. Mode Button (bottom-right corner)
     const modeButton = document.createElement('div');
     modeButton.className = 'mode-button-corner';
     modeButton.innerHTML = `
@@ -265,8 +256,6 @@ class TileControlSystem {
     
     // Append all new containers
     this.container.appendChild(sequenceControls);
-    this.container.appendChild(shapeNavLeft);
-    this.container.appendChild(shapeNavRight);
     this.container.appendChild(shapePatternDisplay);
     this.container.appendChild(modeButton);
   }
@@ -277,10 +266,8 @@ class TileControlSystem {
 
     const statusDisplay = document.createElement('div');
     statusDisplay.className = 'enhanced-status';
-    statusDisplay.innerHTML = `
-      <div id="phase-indicator" role="status" aria-live="polite">Ready</div>
-      <div id="progress-bar"><div class="progress-fill"></div></div>
-    `;
+    this.breathingStatusView = new BreathingStatusView(statusDisplay);
+    this.breathingStatusView.showLoading();
 
     // Append to central tile instead of main container
     centralTile.appendChild(statusDisplay);
@@ -327,7 +314,8 @@ class TileControlSystem {
     document.getElementById('pin-btn')?.addEventListener('click', () => this.togglePin());
     document.getElementById('close-btn')?.addEventListener('click', () => this.closeHUD());
     document.getElementById('theme-btn')?.addEventListener('click', () => this.cycleTheme());
-    document.getElementById('edit-btn')?.addEventListener('click', () => this.toggleEditMode());
+    document.getElementById('audio-btn')?.addEventListener('click', () => this.toggleAudio());
+    document.getElementById('edit-btn')?.addEventListener('click', () => void this.openEditor());
     
     document.getElementById('size-up-btn')?.addEventListener('click', () => this.resizeHUD(this.hudSizeStep));
     document.getElementById('size-down-btn')?.addEventListener('click', () => this.resizeHUD(-this.hudSizeStep));
@@ -339,8 +327,6 @@ class TileControlSystem {
     document.getElementById('inhale-slider')?.addEventListener('input', (e) => this.updateInhaleMax((e.target as HTMLInputElement).value));
     document.getElementById('exhale-slider')?.addEventListener('input', (e) => this.updateExhaleMin((e.target as HTMLInputElement).value));
     
-    document.getElementById('shape-prev-btn')?.addEventListener('click', () => this.previousShape());
-    document.getElementById('shape-next-btn')?.addEventListener('click', () => this.nextShape());
     document.getElementById('mode-btn')?.addEventListener('click', () => this.cycleMode());
 
     // Pattern and sequence controls
@@ -348,30 +334,29 @@ class TileControlSystem {
     document.getElementById('sequence-toggle-btn')?.addEventListener('click', () => this.toggleSequence());
     document.getElementById('sequence-next-btn')?.addEventListener('click', () => this.nextSequence());
 
-    // Edit mode controls
-    document.getElementById('save-config-btn')?.addEventListener('click', () => this.saveConfig());
-    document.getElementById('reset-config-btn')?.addEventListener('click', () => this.resetConfig());
-
     // Handle hover events for zen mode click-through
     this.setupZenModeHover();
-    this.setupShapeClickHandlers();
     
     // Setup tooltips
     this.setupTooltips();
+
+    const api = (window as Window & {
+      electronAPI?: { onEditorDraftApplied?: (callback: (draft: EditorDraft) => void) => void };
+    }).electronAPI;
+    api?.onEditorDraftApplied?.((draft) => this.applyEditorDraft(draft));
   }
   
   private setupTooltips() {
     const tooltipMap: {[key: string]: string} = {
       'pin-btn': 'Pin HUD: enable click-through (Ctrl+Alt+P)',
-      'close-btn': 'Close HUD',
+      'close-btn': 'Hide HUD',
       'theme-btn': 'Cycle Theme',
-      'edit-btn': 'Toggle Edit Mode',
+      'audio-btn': 'Enable tonal breathing cues',
+      'edit-btn': 'Open minimal editor (Ctrl+Alt+E)',
       'size-up-btn': 'Increase Size',
       'size-down-btn': 'Decrease Size',
       'intensity-up-btn': 'Increase Intensity',
       'intensity-down-btn': 'Decrease Intensity',
-      'shape-prev-btn': 'Previous Shape (←)',
-      'shape-next-btn': 'Next Shape (→)',
       'pattern-prev-btn': 'Next breathing pattern (Arrow Up)',
       'sequence-toggle-btn': 'Start/Stop Sequence',
       'sequence-next-btn': 'Next Sequence',
@@ -381,15 +366,13 @@ class TileControlSystem {
     // Keep hover help aligned with the actual handlers and current mode model.
     // The mode selector is independent from the Edit overlay.
     Object.assign(tooltipMap, {
-      'edit-btn': 'Toggle Edit overlay: drag or nudge the shape',
+      'edit-btn': 'Open the minimal editor for shape, pattern, theme, motion, and position',
       'size-up-btn': 'Increase HUD size by 40px',
       'size-down-btn': 'Decrease HUD size by 40px',
       'intensity-up-btn': 'Increase breathing intensity by 0.1',
       'intensity-down-btn': 'Decrease breathing intensity by 0.1',
       'sequence-toggle-btn': 'Start or stop the selected sequence',
       'sequence-next-btn': 'Choose the next sequence',
-      'save-config-btn': 'Save layout and breathing settings',
-      'reset-config-btn': 'Reset saved settings to defaults',
       'base-slider': 'Base breathing size: 0.2 to 1.2',
       'inhale-slider': 'Inhale maximum size: 0.6 to 1.8',
       'exhale-slider': 'Exhale minimum size: 0.1 to 0.8',
@@ -497,67 +480,15 @@ class TileControlSystem {
         return;
       }
       
-      // Edit mode controls
-      if (this.isEditMode) {
-        switch (event.key) {
-          case 'Escape':
-            event.preventDefault();
-            this.deselectShape();
-            this.debugLog('Shape deselected');
-            break;
-          case 'ArrowLeft':
-            event.preventDefault();
-            if (this.selectedShapeElement) {
-              this.moveSelectedShape(-5, 0);
-            } else {
-              this.previousShape();
-            }
-            break;
-          case 'ArrowRight':
-            event.preventDefault();
-            if (this.selectedShapeElement) {
-              this.moveSelectedShape(5, 0);
-            } else {
-              this.nextShape();
-            }
-            break;
-          case 'ArrowUp':
-            event.preventDefault();
-            if (this.selectedShapeElement) {
-              this.moveSelectedShape(0, -5);
-            } else {
-              this.nextPattern();
-            }
-            break;
-          case 'ArrowDown':
-            event.preventDefault();
-            if (this.selectedShapeElement) {
-              this.moveSelectedShape(0, 5);
-            } else {
-              this.previousPattern();
-            }
-            break;
-        }
-      } else {
-        // Normal mode controls
-        switch (event.key) {
-          case 'ArrowLeft':
-            event.preventDefault();
-            this.previousShape();
-            break;
-          case 'ArrowRight':
-            event.preventDefault();
-            this.nextShape();
-            break;
-          case 'ArrowUp':
-            event.preventDefault();
-            this.nextPattern();
-            break;
-          case 'ArrowDown':
-            event.preventDefault();
-            this.previousPattern();
-            break;
-        }
+      switch (event.key) {
+        case 'ArrowUp':
+          event.preventDefault();
+          this.nextPattern();
+          break;
+        case 'ArrowDown':
+          event.preventDefault();
+          this.previousPattern();
+          break;
       }
     });
   }
@@ -599,31 +530,12 @@ class TileControlSystem {
         break;
     }
 
-    if (this.isEditMode) {
-      this.applyEditPresentation();
-    } else {
-      this.container?.classList.remove('edit-mode');
-      this.hideEditControls();
-      this.deselectShape();
-      this.scaleForEditMode(false);
-    }
-  }
-
-  private applyEditPresentation() {
-    this.setControlsVisibility(true);
-    this.restoreAllButtons();
-    this.showAdvancedControls();
-    this.showEditControls();
-    this.showDebugConsole();
-    this.container?.classList.add('edit-mode');
-    this.scaleForEditMode(true);
   }
 
   private setControlsVisibility(visible: boolean) {
     const controlPanel = document.querySelector('.enhanced-controls') as HTMLElement;
     
     if (controlPanel) controlPanel.style.display = visible ? 'block' : 'none';
-    // Mode controls are handled separately via showModeControls/hideModeControls
   }
 
   private setBasicControlsVisibility(visible: boolean) {
@@ -637,7 +549,7 @@ class TileControlSystem {
         const buttons = controlPanel.querySelectorAll('.control-btn');
         buttons.forEach((btn) => {
           const button = btn as HTMLElement;
-          if (button.id === 'close-btn' || button.id === 'pin-btn' || button.id === 'edit-btn') {
+          if (button.id === 'close-btn' || button.id === 'pin-btn' || button.id === 'edit-btn' || button.id === 'audio-btn') {
             button.style.display = 'flex'; // Keep essential controls
           } else {
             button.style.display = 'none'; // Hide other controls
@@ -663,16 +575,6 @@ class TileControlSystem {
     if (slidersRow) slidersRow.style.display = 'none';
   }
 
-  private showEditControls() {
-    const editRow = document.querySelector('.edit-controls') as HTMLElement;
-    if (editRow) editRow.style.display = 'flex';
-  }
-
-  private hideEditControls() {
-    const editRow = document.querySelector('.edit-controls') as HTMLElement;
-    if (editRow) editRow.style.display = 'none';
-  }
-
   private showDebugConsole() {
     if (this.debugConsole) {
       this.debugConsole.style.display = 'block';
@@ -685,16 +587,6 @@ class TileControlSystem {
     }
   }
 
-  private showModeControls() {
-    const modeControls = document.querySelector('.mode-controls') as HTMLElement;
-    if (modeControls) modeControls.style.display = 'flex';
-  }
-
-  private hideModeControls() {
-    const modeControls = document.querySelector('.mode-controls') as HTMLElement;
-    if (modeControls) modeControls.style.display = 'none';
-  }
-
   private restoreAllButtons() {
     // Restore visibility of all buttons that may have been hidden in basic mode
     const controlPanel = document.querySelector('.enhanced-controls') as HTMLElement;
@@ -705,16 +597,6 @@ class TileControlSystem {
         button.style.display = 'flex'; // Show all buttons
       });
     }
-  }
-
-  private nextShape() {
-    this.currentShapeIndex = (this.currentShapeIndex + 1) % BREATHING_SHAPES.length;
-    this.updateShape();
-  }
-
-  private previousShape() {
-    this.currentShapeIndex = (this.currentShapeIndex - 1 + BREATHING_SHAPES.length) % BREATHING_SHAPES.length;
-    this.updateShape();
   }
 
   private nextPattern() {
@@ -731,9 +613,6 @@ class TileControlSystem {
     const newShape = BREATHING_SHAPES[this.currentShapeIndex];
     if (this.breathingEngine) {
       this.breathingEngine.updateShape(newShape);
-      // Update canvas reference after shape change
-      this.currentSvgElement = this.breathingEngine.svgElement || null;
-      this.currentCanvasElement = this.breathingEngine.canvasElement || null;
       // Apply saved position to new shape
       this.applyShapePositionToEngine();
     }
@@ -742,6 +621,11 @@ class TileControlSystem {
 
   private updatePattern() {
     const newPattern = BREATHING_PATTERNS[this.currentPatternIndex];
+    if (!newPattern) {
+      this.breathingStatusView?.showEmpty('No breathing pattern is available');
+      return;
+    }
+
     if (this.breathingEngine) {
       this.breathingEngine.updatePattern(newPattern);
     }
@@ -829,11 +713,8 @@ class TileControlSystem {
 
     this.container.style.width = `${this.hudSize}px`;
     this.container.style.height = `${this.hudSize}px`;
-    this.container.style.setProperty('--hud-scale', (this.hudSize / 300).toFixed(3));
-
     // Keep the central figure and status text proportional while resizing.
-    // Edit-mode zoom is layered on top of this base HUD scale.
-    this.scaleForEditMode(this.isEditMode);
+    this.container.style.setProperty('--hud-scale', (this.hudSize / 300).toFixed(3));
   }
 
   private readSavedHudSize(): number {
@@ -964,9 +845,17 @@ class TileControlSystem {
   }
 
   private async closeHUD() {
+    this.audioCueService.stop();
     if ((window as any).electronAPI?.close) {
       await (window as any).electronAPI.close();
     }
+  }
+
+  private toggleAudio() {
+    this.audioEnabled = !this.audioEnabled;
+    this.audioCueService.setConfig({ enabled: this.audioEnabled, volume: 1 });
+    this.updateAudioButton();
+    this.saveConfig(false);
   }
 
   private applyTheme(theme: ThemeConfig) {
@@ -981,6 +870,12 @@ class TileControlSystem {
     this.container.classList.toggle('theme-glow', theme.effects.glow);
     this.container.classList.toggle('theme-pulse', theme.effects.pulse);
     this.container.classList.toggle('theme-gradient', theme.effects.gradient);
+  }
+
+  private applyFrame(frame: EditorFrame): void {
+    this.currentFrame = frame;
+    this.container?.classList.remove('frame-glass', 'frame-outline', 'frame-soft', 'frame-quiet');
+    this.container?.classList.add(`frame-${frame}`);
   }
 
   private updateDisplays() {
@@ -1009,7 +904,10 @@ class TileControlSystem {
   private updatePatternDisplay() {
     const patternNameEl = document.getElementById('current-pattern-name');
     if (patternNameEl) {
-      patternNameEl.textContent = BREATHING_PATTERNS[this.currentPatternIndex].name;
+      const pattern = BREATHING_PATTERNS[this.currentPatternIndex];
+      if (!pattern) return;
+      patternNameEl.textContent = pattern.name;
+      this.breathingStatusView?.setPattern(pattern);
     }
   }
 
@@ -1059,141 +957,86 @@ class TileControlSystem {
     }
   }
 
+  private updateAudioButton() {
+    const audioButton = document.getElementById('audio-btn');
+    if (!audioButton) return;
+
+    audioButton.textContent = this.audioEnabled ? '\u{1F50A}' : '\u{1F507}';
+    const label = this.audioEnabled ? 'Turn sound off' : 'Turn sound on';
+    audioButton.setAttribute('aria-label', label);
+    audioButton.setAttribute('title', label);
+    audioButton.setAttribute('aria-pressed', String(this.audioEnabled));
+    audioButton.classList.toggle('active', this.audioEnabled);
+  }
+
   private updateEditButton() {
     const editBtn = document.getElementById('edit-btn');
     if (editBtn) {
-      editBtn.textContent = this.isEditMode ? '✅' : '✏️';
-      editBtn.classList.toggle('active', this.isEditMode);
-      editBtn.setAttribute('aria-label', this.isEditMode ? 'Exit edit mode' : 'Open edit mode');
-      editBtn.setAttribute('aria-pressed', String(this.isEditMode));
+      editBtn.textContent = '✏️';
+      editBtn.classList.remove('active');
+      editBtn.setAttribute('aria-label', 'Open minimal editor');
+      editBtn.setAttribute('aria-pressed', 'false');
     }
   }
 
-  private toggleEditMode() {
-    if (this.isEditMode) {
-      // Edit is an overlay, so return to the current base mode.
-      this.isEditMode = false;
-      this.saveConfig();
-      this.container?.classList.remove('edit-mode');
-      this.applyModePresentation();
+  private async openEditor(): Promise<void> {
+    const api = (window as Window & {
+      electronAPI?: { openEditor?: () => Promise<{ success: boolean }> };
+    }).electronAPI;
+    if (api?.openEditor) {
+      await api.openEditor();
+      return;
+    }
+
+    // Browser fallback keeps the editor inspectable outside Electron.
+    const shell = document.getElementById('editor-shell');
+    if (!shell) return;
+    if (!this.fallbackEditor) {
+      this.fallbackEditor = new SystemEditor(shell, (draft) => this.applyEditorDraft(draft));
+      this.fallbackEditor.initialize();
     } else {
-      // Enter edit without changing Zen, Basic, or Advanced.
-      this.isEditMode = true;
-      this.debugLog('Entering edit mode...');
-      this.applyEditPresentation();
-      this.debugLog('Edit mode enabled - drag shapes to move them');
-    }
-
-    this.updateModeDisplay();
-    this.updateEditButton();
-  }
-
-  private setupShapeClickHandlers() {
-    // Add drag handlers to breathing shapes in edit mode
-    if (this.breathingCanvas) {
-      this.breathingCanvas.addEventListener('mousedown', (event) => {
-        if (!this.isEditMode) return;
-        
-        const target = event.target as HTMLElement;
-        if (target && (target.classList.contains('breathing-canvas') || target.tagName === 'CANVAS')) {
-          this.startDrag(target, event);
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      });
-
-      document.addEventListener('mousemove', (event) => {
-        if (this.isDragging) {
-          this.handleDrag(event);
-          event.preventDefault();
-        }
-      });
-
-      document.addEventListener('mouseup', () => {
-        if (this.isDragging) {
-          this.endDrag();
-        }
-      });
+      this.fallbackEditor.open();
     }
   }
 
-  private startDrag(element: HTMLElement, event: MouseEvent) {
-    this.isDragging = true;
-    
-    // Calculate drag offset from current mouse position to element center
-    const rect = element.getBoundingClientRect();
-    this.dragOffset.x = event.clientX - (rect.left + rect.width / 2);
-    this.dragOffset.y = event.clientY - (rect.top + rect.height / 2);
-    
-    this.debugLog(`Started dragging: ${BREATHING_SHAPES[this.currentShapeIndex].name}`);
-  }
-
-  private handleDrag(event: MouseEvent) {
-    if (!this.isDragging) return;
-
-    // Convert mouse position to canvas coordinates
-    const canvas = this.currentCanvasElement || this.breathingEngine?.canvasElement;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const canvasX = ((event.clientX - this.dragOffset.x - rect.left) / rect.width) * 200;
-    const canvasY = ((event.clientY - this.dragOffset.y - rect.top) / rect.height) * 200;
-
-    // Update shape position (relative to canvas center at 100,100)
-    this.shapePosition.x = canvasX - 100;
-    this.shapePosition.y = canvasY - 100;
-
-    // Constrain movement within reasonable bounds
-    this.shapePosition.x = Math.max(-80, Math.min(80, this.shapePosition.x));
-    this.shapePosition.y = Math.max(-80, Math.min(80, this.shapePosition.y));
-
-    // Sync position to breathing engine for immediate update
-    if (this.breathingEngine) {
-      this.breathingEngine.shapePosition.x = this.shapePosition.x;
-      this.breathingEngine.shapePosition.y = this.shapePosition.y;
+  private applyEditorDraft(draft: EditorDraft): void {
+    const shapeIndex = BREATHING_SHAPES.findIndex((shape) => shape.id === draft.shapeId);
+    const patternIndex = BREATHING_PATTERNS.findIndex((pattern) => pattern.id === draft.patternId);
+    const themeIndex = VISUAL_THEMES.findIndex((theme) => theme.id === draft.themeId);
+    if (shapeIndex < 0 || patternIndex < 0 || themeIndex < 0) {
+      console.error('Editor draft references an unknown catalog item');
+      return;
     }
-    
-    this.debugLog(`Dragging to: (${this.shapePosition.x.toFixed(1)}, ${this.shapePosition.y.toFixed(1)})`);
+
+    this.currentShapeIndex = shapeIndex;
+    this.currentPatternIndex = patternIndex;
+    this.currentThemeIndex = themeIndex;
+    this.applyFrame(draft.frame);
+    this.intensity = draft.intensity;
+    this.baseSize = draft.baseSize;
+    this.inhaleMax = draft.inhaleMax;
+    this.exhaleMin = draft.exhaleMin;
+    this.hudSize = draft.hudSize;
+    this.shapePosition = { ...draft.shapePosition };
+
+    this.updateShape();
+    this.updatePattern();
+    this.applyTheme(VISUAL_THEMES[this.currentThemeIndex]);
+    this.updateBreathingParams();
+    this.updateSliderValues();
+    this.applyShapePositionToEngine();
+    this.applyHudSize();
+    void (window as any).electronAPI?.resize?.(this.hudSize);
+    this.saveConfig();
+    this.debugLog('Minimal editor changes applied');
   }
 
-  private endDrag() {
-    this.isDragging = false;
-    this.debugLog(`Shape position: (${this.shapePosition.x.toFixed(1)}, ${this.shapePosition.y.toFixed(1)})`);
-  }
-
-  private updateShapePosition() {
-    // Canvas handles position automatically during rendering
-    // No need to manually update position for canvas-based shapes
-  }
-
-  private applyPositionToShape(shapeElement: any) {
-    // Canvas rendering handles position automatically
-    // This method is no longer needed for canvas-based shapes
-  }
-
-  private deselectShape() {
-    this.isDragging = false;
-  }
-
-  private moveSelectedShape(deltaX: number, deltaY: number) {
-    // Keep keyboard movement for fine-tuning
-    this.shapePosition.x += deltaX;
-    this.shapePosition.y += deltaY;
-
-    // Constrain movement within container bounds
-    this.shapePosition.x = Math.max(-80, Math.min(80, this.shapePosition.x));
-    this.shapePosition.y = Math.max(-80, Math.min(80, this.shapePosition.y));
-
-    // Update the actual breathing engine's shape
-    this.breathingEngine?.updateShape(BREATHING_SHAPES[this.currentShapeIndex]);
-    this.debugLog(`Keyboard moved shape to: (${this.shapePosition.x}, ${this.shapePosition.y})`);
-  }
-
-  private saveConfig() {
+  private saveConfig(showNotification = true) {
     const config = {
       currentShape: this.currentShapeIndex,
       currentPattern: this.currentPatternIndex,
       currentTheme: this.currentThemeIndex,
+      frame: this.currentFrame,
       intensity: this.intensity,
       mode: this.currentMode,
       shapePosition: this.shapePosition,
@@ -1203,13 +1046,14 @@ class TileControlSystem {
         exhaleMin: this.exhaleMin
       },
       hudSize: this.hudSize,
+      audioEnabled: this.audioEnabled,
       timestamp: Date.now()
     };
 
     try {
       localStorage.setItem('breathingHudConfig', JSON.stringify(config));
       console.log('Configuration saved:', config);
-      this.showSaveNotification();
+      if (showNotification) this.showSaveNotification();
     } catch (error) {
       console.error('Failed to save configuration:', error);
     }
@@ -1230,10 +1074,12 @@ class TileControlSystem {
         this.currentShapeIndex = readIndex(config.currentShape, BREATHING_SHAPES.length);
         this.currentPatternIndex = readIndex(config.currentPattern, BREATHING_PATTERNS.length);
         this.currentThemeIndex = readIndex(config.currentTheme, VISUAL_THEMES.length);
+        this.currentFrame = isEditorFrame(config.frame) ? config.frame : 'glass';
         this.intensity = clampNumber(config.intensity, 0.1, 1.0, 0.7);
         this.currentMode = typeof savedMode === 'string' && modes.includes(savedMode as HudMode)
           ? savedMode as HudMode
           : 'basic';
+        this.audioEnabled = typeof config.audioEnabled === 'boolean' ? config.audioEnabled : false;
         this.shapePosition = {
           x: clampNumber(savedPosition.x, -80, 80, 0),
           y: clampNumber(savedPosition.y, -80, 80, 0),
@@ -1258,48 +1104,16 @@ class TileControlSystem {
         this.updateShape();
         this.updatePattern();
         this.applyTheme(VISUAL_THEMES[this.currentThemeIndex]);
+        this.applyFrame(this.currentFrame);
         this.updateDisplays();
         this.updateSliderValues();
-        this.applyShapePosition();
+        this.updateAudioButton();
         
         console.log('Configuration loaded:', config);
       }
     } catch (error) {
       console.error('Failed to load configuration:', error);
     }
-  }
-
-  private resetConfig() {
-    // Reset to defaults
-    this.currentShapeIndex = 0;
-    this.currentPatternIndex = 0;
-    this.currentThemeIndex = 0;
-    this.intensity = 0.7;
-    this.shapePosition = { x: 0, y: 0 };
-    this.baseSize = 0.6;
-    this.inhaleMax = 1.0;
-    this.exhaleMin = 0.4;
-    this.hudSize = 300;
-    
-    // Clear local storage
-    localStorage.removeItem('breathingHudConfig');
-    localStorage.removeItem('breathingHudWindowSize');
-    
-    // Apply defaults
-    this.updateShape();
-    this.updatePattern();
-    this.applyTheme(VISUAL_THEMES[this.currentThemeIndex]);
-    this.updateDisplays();
-    this.updateSliderValues();
-    this.updateBreathingParams();
-    this.applyShapePosition();
-    this.applyHudSize();
-    if ((window as any).electronAPI?.resize) {
-      void (window as any).electronAPI.resize(this.hudSize);
-    }
-    
-    console.log('Configuration reset to defaults');
-    this.debugLog('Configuration reset to defaults');
   }
 
   private updateSliderValues() {
@@ -1317,15 +1131,6 @@ class TileControlSystem {
     this.updateSliderDisplay('exhale', this.exhaleMin);
   }
 
-  private applyShapePosition() {
-    // Shape position is now applied directly to SVG elements during creation
-    // This method ensures the breathing engine recreates with correct position
-    if (this.breathingEngine) {
-      this.breathingEngine.updateShape(BREATHING_SHAPES[this.currentShapeIndex]);
-      this.applyShapePositionToEngine();
-    }
-  }
-
   private applyShapePositionToEngine() {
     // Canvas position is applied automatically during rendering
     // Force a re-render to show the new position
@@ -1334,74 +1139,6 @@ class TileControlSystem {
       this.breathingEngine.shapePosition.x = this.shapePosition.x;
       this.breathingEngine.shapePosition.y = this.shapePosition.y;
       this.breathingEngine.renderShape();
-    }
-  }
-
-  private loadUserConfig() {
-    try {
-      // Try to load from localStorage first (runtime config)
-      const userConfig = localStorage.getItem('breathingHudUserConfig');
-      if (userConfig) {
-        const config = JSON.parse(userConfig);
-        this.editModeScale = clampNumber(config.editModeScale, 1, 1.25, 1);
-        this.debugLog(`User config loaded: edit scale ${this.editModeScale}x`);
-        return;
-      }
-
-      // Set default if no config found
-      this.editModeScale = 1;
-      this.debugLog(`Using default edit scale: ${this.editModeScale}x`);
-      
-      // Save default config for future use
-      this.saveUserConfig();
-    } catch (error) {
-      console.error('Failed to load user configuration:', error);
-      this.editModeScale = 1;
-    }
-  }
-
-  private saveUserConfig() {
-    try {
-      const config = {
-        editModeScale: this.editModeScale,
-        timestamp: Date.now()
-      };
-      localStorage.setItem('breathingHudUserConfig', JSON.stringify(config));
-    } catch (error) {
-      console.error('Failed to save user configuration:', error);
-    }
-  }
-
-  private scaleForEditMode(enable: boolean) {
-    if (!this.container) return;
-
-    const hudScale = this.hudSize / 300;
-    const editScale = enable ? clampNumber(this.editModeScale, 1, 1.25, 1) : 1;
-    const scale = hudScale * editScale;
-    
-    // Instead of scaling the whole container, scale the central breathing area
-    const centralTile = document.querySelector('.central-breathing-tile') as HTMLElement;
-    
-    if (enable && centralTile) {
-      // Keep edit mode at a safe, bounded zoom. The HUD resize controls are
-      // responsible for changing the window size; edit mode should not make
-      // text and controls overflow the window.
-      centralTile.style.transform = `translate(-50%, -50%) scale(${scale})`;
-      centralTile.style.transformOrigin = 'center center';
-      this.debugLog(`Edit mode zoom: ${editScale}x; HUD scale: ${hudScale.toFixed(2)}x`);
-    } else if (centralTile) {
-      // Reset to normal size
-      centralTile.style.transform = 'translate(-50%, -50%) scale(var(--hud-scale, 1))';
-      centralTile.style.transformOrigin = '';
-      this.debugLog('Central breathing area reset to normal size');
-    }
-    
-    // Scale debug console proportionally
-    if (this.debugConsole) {
-      const debugHeight = enable ? `${120}px` : '120px'; // Keep debug console normal size
-      const fontSize = enable ? `10px` : '10px';
-      this.debugConsole.style.height = debugHeight;
-      this.debugConsole.style.fontSize = fontSize;
     }
   }
 
@@ -1460,122 +1197,82 @@ class TileControlSystem {
   private initializeBreathingEngine() {
     if (!this.breathingCanvas) {
       console.error('Breathing canvas not found');
+      this.breathingStatusView?.showError('Breathing visualization could not start');
       return;
     }
 
     const currentShape = BREATHING_SHAPES[this.currentShapeIndex];
     const currentPattern = BREATHING_PATTERNS[this.currentPatternIndex];
-    
-    this.breathingEngine = new EnhancedBreathingEngine(
-      this.breathingCanvas,
-      currentShape,
-      currentPattern
-    );
-
-    this.breathingEngine.setPhaseChangeCallback((phase, progress) => {
-      this.updatePhaseDisplay(phase.name, progress, phase.nostril);
-    });
-
-    // Connect sequence manager to breathing cycles
-    this.breathingEngine.setCycleCompleteCallback(() => {
-      if (this.sequenceManager.isActive()) {
-        this.sequenceManager.onBreathingCycleComplete();
-        this.updateDisplays(); // Update sequence status display
-      }
-    });
-
-    // Store reference to the canvas for drag operations
-    this.currentSvgElement = this.breathingEngine.svgElement || null;
-    this.currentCanvasElement = this.breathingEngine.canvasElement || null;
-
-    this.breathingEngine.start();
-    console.log('Enhanced breathing engine initialized and started');
-  }
-
-  private updatePhaseDisplay(phaseName: string, progress: number, nostril?: 'left' | 'right' | 'both') {
-    const phaseIndicator = document.getElementById('phase-indicator');
-    const progressFill = document.querySelector('.progress-fill') as HTMLElement;
-    const nostrilIndicator = document.getElementById('nostril-indicator');
-
-    if (phaseIndicator) {
-      phaseIndicator.textContent = phaseName.charAt(0).toUpperCase() + phaseName.slice(1);
+    if (!currentShape || !currentPattern) {
+      this.breathingStatusView?.showEmpty('No breathing pattern is available');
+      return;
     }
 
-    // Update nostril indicator
-    if (nostrilIndicator) {
-      const currentPattern = BREATHING_PATTERNS[this.currentPatternIndex];
-      if (currentPattern.isNostrilBreathing && nostril) {
-        nostrilIndicator.style.display = 'flex';
-        const leftSpan = nostrilIndicator.querySelector('.nostril-left') as HTMLElement;
-        const rightSpan = nostrilIndicator.querySelector('.nostril-right') as HTMLElement;
+    // Bind the status sink to the selected pattern before the first animation
+    // frame. This matters after loading a persisted non-default pattern.
+    this.breathingStatusView?.setPattern(currentPattern);
+    this.breathingStatusView?.setRuntimeState('loading');
 
-        if (leftSpan && rightSpan) {
-          leftSpan.className = `nostril-left ${nostril === 'left' || nostril === 'both' ? 'active' : 'inactive'}`;
-          rightSpan.className = `nostril-right ${nostril === 'right' || nostril === 'both' ? 'active' : 'inactive'}`;
+    try {
+      this.audioCueService.stop();
+      this.breathingEngine?.stop();
+      this.breathingEngine = new EnhancedBreathingEngine(
+        this.breathingCanvas,
+        currentShape,
+        currentPattern
+      );
+      this.applyShapePositionToEngine();
+
+      this.breathingEngine.setProgressCallback((progress) => {
+        this.breathingStatusView?.render(progress);
+      });
+
+      this.breathingEngine.setPhaseChangeCallback((phase) => {
+        this.audioCueService.playPhase(phase);
+      });
+
+      // Connect sequence manager to breathing cycles
+      this.breathingEngine.setCycleCompleteCallback(() => {
+        if (this.sequenceManager.isActive()) {
+          this.sequenceManager.onBreathingCycleComplete();
+          this.updateDisplays(); // Update sequence status display
         }
-      } else {
-        nostrilIndicator.style.display = 'none';
-      }
-    }
+      });
 
-    if (progressFill) {
-      let fillProgress: number;
-      let fillColor: string;
-
-      // Calculate fill progress and color based on phase
-      switch (phaseName.toLowerCase()) {
-        case 'inhale':
-          // Fill up during inhale (0% to 100%)
-          fillProgress = progress * 100;
-          fillColor = 'var(--theme-primary)';
-          break;
-
-        case 'hold':
-          // Stay filled during hold (100%)
-          fillProgress = 100;
-          fillColor = 'var(--theme-accent)';
-          break;
-
-        case 'exhale':
-          // Empty out during exhale (100% to 0%)
-          fillProgress = (1 - progress) * 100;
-          fillColor = 'var(--theme-secondary)';
-          break;
-
-        case 'pause':
-          // Stay empty during pause (0%)
-          fillProgress = 0;
-          fillColor = 'var(--theme-primary)';
-          break;
-
-        default:
-          fillProgress = progress * 100;
-          fillColor = 'var(--theme-primary)';
-          break;
-      }
-
-      progressFill.style.width = `${fillProgress}%`;
-      progressFill.style.background = fillColor;
-
-      // Remove previous phase classes and add current phase class
-      progressFill.className = 'progress-fill';
-      progressFill.classList.add(phaseName.toLowerCase());
-
-      // Add breathing-specific transition timing
-      if (phaseName.toLowerCase() === 'hold' || phaseName.toLowerCase() === 'pause') {
-        progressFill.style.transition = 'background 0.3s ease';
-      } else {
-        progressFill.style.transition = 'width 0.1s ease, background 0.3s ease';
-      }
+      this.breathingEngine.start();
+      console.log('Enhanced breathing engine initialized and started');
+    } catch (error) {
+      console.error('Failed to initialize breathing engine:', error);
+      this.breathingStatusView?.showError('Breathing visualization could not start');
     }
   }
 }
 
-// Initialize the enhanced tile control system
-const tileSystem = new TileControlSystem();
+// The editor uses the same renderer bundle but a separate BrowserWindow query
+// mode, so the transparent HUD engine is never started in the editor window.
+const isEditorWindow = new URLSearchParams(window.location.search).get('view') === 'editor';
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => tileSystem.initialize());
+if (isEditorWindow) {
+  const initializeEditor = () => {
+    const shell = document.getElementById('editor-shell');
+    if (!shell) {
+      console.error('Minimal editor shell not found');
+      return;
+    }
+    new SystemEditor(shell).initialize();
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeEditor, { once: true });
+  } else {
+    initializeEditor();
+  }
 } else {
-  tileSystem.initialize();
+  const tileSystem = new TileControlSystem();
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => tileSystem.initialize(), { once: true });
+  } else {
+    void tileSystem.initialize();
+  }
 }

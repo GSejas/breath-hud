@@ -1,8 +1,11 @@
 import { ipcMain } from 'electron';
 import { ConfigManager } from '../shared/config-manager';
 import type { IHudApplication } from '../shared/types';
+import { normalizeEditorDraft } from '../shared/editor-draft';
 
-export function setupIPCHandlers(hudApp: Pick<IHudApplication, 'getMainWindow'>) {
+export function setupIPCHandlers(
+  hudApp: Pick<IHudApplication, 'getMainWindow' | 'getEditorWindow' | 'openEditor' | 'closeEditor'>,
+) {
   ipcMain.handle('window:pin', async () => {
     const window = hudApp.getMainWindow();
     if (window) {
@@ -37,7 +40,9 @@ export function setupIPCHandlers(hudApp: Pick<IHudApplication, 'getMainWindow'>)
   ipcMain.handle('window:close', async () => {
     const window = hudApp.getMainWindow();
     if (window) {
-      window.close();
+      // Main-window close is a tray hide action. The tray's Quit command owns
+      // process termination so the HUD/editor remain recoverable.
+      window.hide();
       return { success: true };
     }
     throw new Error('Main window not available');
@@ -65,6 +70,45 @@ export function setupIPCHandlers(hudApp: Pick<IHudApplication, 'getMainWindow'>)
     const size = Math.round(Math.max(240, Math.min(600, requestedSize)));
     window.setSize(size, size);
     return { success: true, width: size, height: size };
+  });
+
+  ipcMain.handle('editor:open', async () => {
+    hudApp.openEditor?.();
+    return { success: true };
+  });
+
+  ipcMain.handle('editor:close', async (event) => {
+    const editorWindow = hudApp.getEditorWindow?.();
+    if (editorWindow && !editorWindow.isDestroyed() && editorWindow.webContents.id !== event.sender.id) {
+      throw new Error('Only the editor window can close the editor');
+    }
+
+    if (editorWindow && !editorWindow.isDestroyed()) {
+      editorWindow.close();
+      return { success: true };
+    }
+
+    // A renderer-side fallback is useful for tests and keeps the contract
+    // truthful if the command is invoked after the window already closed.
+    if (event.sender.isDestroyed()) return { success: true };
+    hudApp.closeEditor?.();
+    return { success: true };
+  });
+
+  ipcMain.handle('editor:save-draft', async (event, value: unknown) => {
+    const editorWindow = hudApp.getEditorWindow?.();
+    if (!editorWindow || editorWindow.isDestroyed() || editorWindow.webContents.id !== event.sender.id) {
+      throw new Error('Only the editor window can save an editor draft');
+    }
+
+    const draft = normalizeEditorDraft(value);
+    const hudWindow = hudApp.getMainWindow();
+    if (!hudWindow || hudWindow.isDestroyed()) {
+      throw new Error('Main HUD window is not available');
+    }
+
+    hudWindow.webContents.send('hud:editor-draft-applied', draft);
+    return { success: true, draft };
   });
 
   // Configuration handler

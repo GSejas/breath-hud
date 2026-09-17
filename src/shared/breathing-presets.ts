@@ -138,14 +138,14 @@ export const BREATHING_PATTERNS: BreathingPattern[] = [
     duration: 24,
     isNostrilBreathing: true,
     phases: [
-      { name: 'inhale', duration: 4, intensity: 0.7, nostril: 'left' },
-      { name: 'hold', duration: 2, intensity: 1.0, nostril: 'both' },
-      { name: 'exhale', duration: 4, intensity: 0.3, nostril: 'right' },
-      { name: 'pause', duration: 2, intensity: 0.2, nostril: 'right' },
-      { name: 'inhale', duration: 4, intensity: 0.7, nostril: 'right' },
-      { name: 'hold', duration: 2, intensity: 1.0, nostril: 'both' },
-      { name: 'exhale', duration: 4, intensity: 0.3, nostril: 'left' },
-      { name: 'pause', duration: 2, intensity: 0.2, nostril: 'left' }
+      { name: 'inhale', duration: 4, intensity: 0.7, airway: 'nose', nostril: 'left' },
+      { name: 'hold', duration: 2, intensity: 1.0, airway: 'nose', nostril: 'both' },
+      { name: 'exhale', duration: 4, intensity: 0.3, airway: 'nose', nostril: 'right' },
+      { name: 'pause', duration: 2, intensity: 0.2, airway: 'nose', nostril: 'right' },
+      { name: 'inhale', duration: 4, intensity: 0.7, airway: 'nose', nostril: 'right' },
+      { name: 'hold', duration: 2, intensity: 1.0, airway: 'nose', nostril: 'both' },
+      { name: 'exhale', duration: 4, intensity: 0.3, airway: 'nose', nostril: 'left' },
+      { name: 'pause', duration: 2, intensity: 0.2, airway: 'nose', nostril: 'left' }
     ]
   }
 ];

@@ -3,4 +3,5 @@
  */
 
 export * from './breathing.types';
+export * from './editor.types';
 export * from './theme.types';

@@ -1,5 +1,9 @@
 # UI Layout Reorganization & Auto-Fade Plan
 
+> Status: historical layout proposal. The production HUD does not include the
+> proposed side shape-navigation buttons; shape selection belongs in the
+> separate editor. Do not reintroduce those controls from this document.
+
 ## Overview
 Reorganize the HUD controls into logical positions and implement auto-fade behavior where the entire interface becomes minimal when not in use.
 

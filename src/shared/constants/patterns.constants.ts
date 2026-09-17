@@ -98,12 +98,12 @@ export const BREATHING_PATTERNS: BreathingPattern[] = [
     duration: 24,
     isNostrilBreathing: true,
     phases: [
-      { name: 'inhale', duration: 4, intensity: 0.7, nostril: 'left' },
-      { name: 'exhale', duration: 4, intensity: 0.3, nostril: 'right' },
-      { name: 'inhale', duration: 4, intensity: 0.7, nostril: 'right' },
-      { name: 'exhale', duration: 4, intensity: 0.3, nostril: 'left' },
-      { name: 'inhale', duration: 4, intensity: 0.7, nostril: 'both' },
-      { name: 'exhale', duration: 4, intensity: 0.3, nostril: 'both' }
+      { name: 'inhale', duration: 4, intensity: 0.7, airway: 'nose', nostril: 'left' },
+      { name: 'exhale', duration: 4, intensity: 0.3, airway: 'nose', nostril: 'right' },
+      { name: 'inhale', duration: 4, intensity: 0.7, airway: 'nose', nostril: 'right' },
+      { name: 'exhale', duration: 4, intensity: 0.3, airway: 'nose', nostril: 'left' },
+      { name: 'inhale', duration: 4, intensity: 0.7, airway: 'nose', nostril: 'both' },
+      { name: 'exhale', duration: 4, intensity: 0.3, airway: 'nose', nostril: 'both' }
     ]
   }
 ];

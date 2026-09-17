@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="760" viewBox="0 0 1480 760" role="img" aria-labelledby="title desc">
+  <title id="title">Breathing HUD redesign view storyboard</title>
+  <desc id="desc">Six storyboard panels show the runtime HUD, first-run welcome tile, basic mode, advanced tuning sheet, minimal editor, and tray recovery.</desc>
+  <style>
+    .bg{fill:#0b0e13}.panel{fill:#121823;stroke:#314052;stroke-width:1}.hud{fill:#0d1118;stroke:#51667d;stroke-width:1}.glass{fill:#182331;stroke:#52677d}.text{fill:#f5f7fa;font:600 15px system-ui,sans-serif}.muted{fill:#9ba9b9;font:400 11px system-ui,sans-serif}.label{fill:#78d9ad;font:700 10px system-ui,sans-serif;letter-spacing:1.3px}.accent{fill:#a8d5ff}.warm{fill:#f0b56d}.coral{stroke:#ffb6a5;fill:none;stroke-width:4}.line{stroke:#364659;stroke-width:2}.button{fill:#223044;stroke:#5b7188}.small{fill:#c8d3df;font:600 10px system-ui,sans-serif}.step{fill:#243342;stroke:#62788c}.active{fill:#ffb6a5;stroke:#ffb6a5}.thin{stroke:#60758a;stroke-width:1;fill:none}
+  </style>
+  <rect class="bg" width="1480" height="760" rx="24"/>
+  <text class="label" x="36" y="38">BREATHING HUD / VIEW STORYBOARD</text>
+  <text class="muted" x="36" y="60">One focus surface, one utility rail, shared vocabulary across runtime, editor, and tray.</text>
+
+  <g transform="translate(36,90)">
+    <rect class="panel" width="330" height="300" rx="16"/><text class="label" x="20" y="28">V0 · REST</text><text class="text" x="20" y="51">Runtime HUD / quiet</text>
+    <rect class="hud" x="20" y="70" width="290" height="210" rx="18"/><circle class="coral" cx="165" cy="170" r="60"/><text class="warm" x="141" y="144" font-family="system-ui" font-size="12">INHALE</text><text class="text" x="141" y="176" font-size="27">4.8</text><text class="muted" x="124" y="198">follow the cue</text><line class="line" x1="90" y1="236" x2="240" y2="236"/><line class="active" x1="90" y1="236" x2="148" y2="236"/><text class="muted" x="106" y="260">Zen · Circle · Ready</text>
+  </g>
+  <g transform="translate(390,90)">
+    <rect class="panel" width="330" height="300" rx="16"/><text class="label" x="20" y="28">V1 · FIRST RUN</text><text class="text" x="20" y="51">Welcome tile / step 1 of 3</text>
+    <rect class="hud" x="20" y="70" width="150" height="210" rx="18"/><circle class="coral" cx="95" cy="170" r="50"/><text class="warm" x="73" y="166" font-family="system-ui" font-size="11">INHALE</text><text class="muted" x="64" y="260">HUD remains visible</text>
+    <rect class="glass" x="184" y="95" width="126" height="160" rx="14"/><text class="text" x="202" y="123" font-size="14">Breathe</text><text class="muted" x="202" y="151">The circle follows</text><text class="muted" x="202" y="168">your phase. Follow</text><text class="muted" x="202" y="185">the word, not the</text><text class="muted" x="202" y="202">animation.</text><circle class="active" cx="207" cy="231" r="4"/><circle class="step" cx="223" cy="231" r="4"/><circle class="step" cx="239" cy="231" r="4"/><text class="small" x="261" y="236">Next</text>
+  </g>
+  <g transform="translate(744,90)">
+    <rect class="panel" width="330" height="300" rx="16"/><text class="label" x="20" y="28">V2 · BASIC</text><text class="text" x="20" y="51">Active session / rail open</text>
+    <rect class="hud" x="20" y="70" width="290" height="210" rx="18"/><circle class="coral" cx="150" cy="164" r="58"/><text class="warm" x="129" y="143" font-family="system-ui" font-size="11">HOLD</text><text class="text" x="133" y="176" font-size="24">4.8</text><text class="muted" x="108" y="198">Stage 2 of 3</text><rect class="glass" x="232" y="87" width="62" height="108" rx="12"/><circle class="button" cx="248" cy="105" r="8"/><circle class="button" cx="270" cy="105" r="8"/><circle class="button" cx="248" cy="130" r="8"/><circle class="button" cx="270" cy="130" r="8"/><text class="small" x="243" y="165">Edit</text><text class="small" x="239" y="183">Pin</text><text class="muted" x="98" y="260">Focus Session · Circle</text>
+  </g>
+  <g transform="translate(1098,90)">
+    <rect class="panel" width="330" height="300" rx="16"/><text class="label" x="20" y="28">V3 · ADVANCED</text><text class="text" x="20" y="51">Tune sheet / bounded values</text>
+    <rect class="hud" x="20" y="70" width="124" height="210" rx="18"/><circle class="coral" cx="82" cy="164" r="43"/><text class="warm" x="65" y="166" font-family="system-ui" font-size="10">HOLD</text><rect class="glass" x="154" y="78" width="156" height="190" rx="14"/><text class="text" x="170" y="103" font-size="13">Tune</text><text class="muted" x="170" y="127">Base</text><line class="line" x1="210" y1="124" x2="293" y2="124"/><circle class="warm" cx="250" cy="124" r="5"/><text class="muted" x="170" y="154">Inhale max</text><line class="line" x1="210" y1="151" x2="293" y2="151"/><circle class="warm" cx="272" cy="151" r="5"/><text class="muted" x="170" y="181">Exhale min</text><line class="line" x1="210" y1="178" x2="293" y2="178"/><circle class="warm" cx="238" cy="178" r="5"/><rect class="button" x="170" y="214" width="118" height="30" rx="8"/><text class="small" x="207" y="233">Done</text>
+  </g>
+
+  <g transform="translate(36,430)">
+    <rect class="panel" width="680" height="280" rx="16"/><text class="label" x="20" y="28">V4 · EDITOR</text><text class="text" x="20" y="51">Minimal editor / same vocabulary, larger workspace</text>
+    <rect class="hud" x="20" y="70" width="640" height="185" rx="12"/><rect class="glass" x="20" y="70" width="114" height="185" rx="12"/><text class="label" x="38" y="98">WORKSPACE</text><text class="small" x="38" y="125">01 Appearance</text><text class="muted" x="38" y="148">02 Motion</text><rect class="glass" x="154" y="86" width="230" height="145" rx="10"/><text class="text" x="170" y="110" font-size="13">Preview</text><circle class="coral" cx="270" cy="160" r="38"/><text class="warm" x="248" y="164" font-family="system-ui" font-size="10">INHALE</text><rect class="glass" x="400" y="86" width="244" height="145" rx="10"/><text class="text" x="416" y="110" font-size="13">System settings</text><text class="muted" x="416" y="136">Frame · Theme · Intensity</text><text class="muted" x="416" y="158">Base · Inhale · Exhale · Size</text><rect class="button" x="536" y="194" width="92" height="24" rx="6"/><text class="small" x="552" y="210">Save</text>
+  </g>
+  <g transform="translate(744,430)">
+    <rect class="panel" width="684" height="280" rx="16"/><text class="label" x="20" y="28">V5 · TRAY</text><text class="text" x="20" y="51">Recovery / background ownership</text>
+    <rect class="hud" x="20" y="78" width="170" height="136" rx="14"/><circle class="coral" cx="105" cy="142" r="36"/><text class="warm" x="81" y="146" font-family="system-ui" font-size="10">READY</text><rect class="glass" x="214" y="88" width="190" height="118" rx="12"/><text class="text" x="232" y="116" font-size="13">Breathing HUD</text><text class="muted" x="232" y="141">Show HUD</text><text class="muted" x="232" y="160">Open minimal editor</text><text class="muted" x="232" y="179">Hide HUD</text><text class="muted" x="232" y="198">Quit</text><path class="thin" d="M430 148 H628"/><text class="small" x="438" y="141">same names</text><text class="muted" x="438" y="163">Edit · Pin · Hide · Quit</text><text class="muted" x="438" y="183">tray is recovery, not a second app</text>
+  </g>
+</svg>

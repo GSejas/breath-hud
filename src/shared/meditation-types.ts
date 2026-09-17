@@ -22,6 +22,8 @@ export interface BreathingPhase {
   name: 'inhale' | 'hold' | 'exhale' | 'pause';
   duration: number; // in seconds
   intensity: number; // 0-1 scale
+  /** Optional creator-authored route; omitted leaves the choice to the user. */
+  airway?: 'nose' | 'mouth';
   nostril?: 'left' | 'right' | 'both'; // for nostril breathing patterns
 }
 

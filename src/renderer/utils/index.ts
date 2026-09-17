@@ -4,4 +4,5 @@
 
 export * from './easing';
 export * from './breathing';
+export * from './arrow-cues';
 export * from './color';

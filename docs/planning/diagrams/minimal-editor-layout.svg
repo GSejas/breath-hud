@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">Minimal editor responsive layout board</title>
+  <desc id="desc">A dark design board showing the two-column desktop editor and the stacked mobile editor with preview, settings, and footer actions.</desc>
+  <style>
+    .bg{fill:#0d1016}.surface{fill:#151a23;stroke:#344050;stroke-width:1}.raised{fill:#1c2530;stroke:#506176;stroke-width:1}.line{stroke:#344050;stroke-width:1}.text{fill:#f4f6f8;font:600 16px system-ui,sans-serif}.muted{fill:#9aa7b7;font:400 12px system-ui,sans-serif}.label{fill:#78d9ad;font:700 11px system-ui,sans-serif;letter-spacing:1.4px}.accent{fill:#a8d5ff}.tiny{fill:#9aa7b7;font:500 10px system-ui,sans-serif}.shape{fill:none;stroke:#a8d5ff;stroke-width:3}.button{fill:#223044;stroke:#53677d;stroke-width:1}.selected{fill:#203b4a;stroke:#a8d5ff;stroke-width:1.5}
+  </style>
+  <rect class="bg" width="1200" height="680" rx="20"/>
+  <text class="label" x="48" y="42">MINIMAL EDITOR / RESPONSIVE BOARD</text>
+  <text class="muted" x="48" y="64">Same draft, same controls, different composition.</text>
+
+  <text class="text" x="48" y="104">Desktop · 980 × 720</text>
+  <rect class="surface" x="48" y="122" width="720" height="500" rx="14"/>
+  <rect class="raised" x="48" y="122" width="720" height="58" rx="14"/>
+  <text class="text" x="74" y="157">✦  Minimal editor</text><text class="muted" x="610" y="157">Local changes   ×</text>
+  <rect class="surface" x="48" y="180" width="132" height="394"/>
+  <text class="label" x="70" y="211">WORKSPACE</text>
+  <rect class="selected" x="62" y="228" width="104" height="34" rx="6"/><text class="muted" x="74" y="250">01  Appearance</text>
+  <text class="muted" x="74" y="282">02  Motion</text>
+  <text class="tiny" x="70" y="334">Changes apply live.</text><text class="tiny" x="70" y="350">Save when ready.</text>
+  <rect class="surface" x="200" y="204" width="264" height="350" rx="10"/>
+  <text class="text" x="222" y="234">Preview</text><text class="muted" x="395" y="234">Circle</text>
+  <line class="line" x1="200" y1="250" x2="464" y2="250"/>
+  <rect class="raised" x="220" y="270" width="224" height="220" rx="8"/>
+  <rect class="shape" x="286" y="320" width="92" height="92" rx="20"/><circle class="shape" cx="332" cy="366" r="36"/>
+  <text class="tiny" x="232" y="520">Zen · Circle</text><text class="tiny" x="376" y="520">Ready</text>
+  <rect class="surface" x="484" y="204" width="264" height="350" rx="10"/>
+  <text class="text" x="506" y="234">System settings</text><text class="muted" x="707" y="234">Ocean</text>
+  <line class="line" x1="484" y1="250" x2="748" y2="250"/>
+  <text class="label" x="506" y="279">FRAME</text>
+  <rect class="selected" x="506" y="291" width="54" height="40" rx="6"/><text class="tiny" x="518" y="355">Glass</text>
+  <rect class="button" x="570" y="291" width="64" height="40" rx="6"/><text class="tiny" x="580" y="355">Outline</text>
+  <rect class="button" x="644" y="291" width="42" height="40" rx="6"/><text class="tiny" x="651" y="355">Soft</text>
+  <rect class="button" x="696" y="291" width="42" height="40" rx="6"/><text class="tiny" x="700" y="355">Quiet</text>
+  <text class="label" x="506" y="388">APPEARANCE</text><text class="muted" x="506" y="416">Theme</text><rect class="button" x="570" y="398" width="168" height="28" rx="5"/><text class="tiny" x="582" y="417">Ocean                 v</text>
+  <text class="muted" x="506" y="456">Intensity</text><line class="line" x1="570" y1="452" x2="718" y2="452"/><circle class="accent" cx="643" cy="452" r="5"/><text class="tiny" x="723" y="456">70%</text>
+  <text class="label" x="506" y="491">MOTION SCALE</text><text class="tiny" x="506" y="515">Base · Inhale · Exhale · HUD size</text>
+  <line class="line" x1="48" y1="574" x2="768" y2="574"/><text class="muted" x="74" y="603">Reset defaults</text><text class="muted" x="610" y="603">Cancel</text><rect class="selected" x="652" y="584" width="94" height="30" rx="6"/><text class="tiny" x="665" y="603">Save changes</text>
+
+  <text class="text" x="820" y="104">Mobile · 390 × 844</text>
+  <rect class="surface" x="820" y="122" width="300" height="500" rx="18"/>
+  <rect class="raised" x="820" y="122" width="300" height="52" rx="18"/><text class="text" x="838" y="154">✦  Minimal editor</text><text class="muted" x="1072" y="154">×</text>
+  <text class="text" x="840" y="202">Shape your breathing space</text><text class="muted" x="840" y="222">Test the frame and rhythm.</text>
+  <rect class="surface" x="840" y="242" width="260" height="160" rx="10"/><text class="text" x="856" y="268">Preview</text><text class="muted" x="1052" y="268">Circle</text><rect class="shape" x="924" y="292" width="82" height="82" rx="18"/><circle class="shape" cx="965" cy="333" r="31"/><text class="tiny" x="856" y="388">Zen · Circle</text>
+  <rect class="surface" x="840" y="420" width="260" height="150" rx="10"/><text class="text" x="856" y="446">System settings</text><text class="label" x="856" y="470">FRAME</text><rect class="selected" x="856" y="480" width="54" height="26" rx="5"/><rect class="button" x="916" y="480" width="62" height="26" rx="5"/><rect class="button" x="984" y="480" width="42" height="26" rx="5"/><rect class="button" x="1032" y="480" width="52" height="26" rx="5"/><text class="tiny" x="856" y="535">Theme · Intensity · Motion scale…</text>
+  <line class="line" x1="820" y1="574" x2="1120" y2="574"/><text class="tiny" x="840" y="603">Local changes</text><text class="tiny" x="1030" y="603">Cancel</text><text class="tiny" x="1074" y="603">Save</text>
+</svg>

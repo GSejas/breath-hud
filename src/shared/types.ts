@@ -4,6 +4,7 @@
  */
 
 import { BrowserWindow } from 'electron';
+import type { EditorDraft } from './types/editor.types';
 
 // Configuration Interfaces
 export interface HudConfig {
@@ -51,6 +52,9 @@ export interface HudConfig {
 // Main Process Interfaces
 export interface IHudApplication {
   getMainWindow(): BrowserWindow | null;
+  getEditorWindow?(): BrowserWindow | null;
+  openEditor?(): void;
+  closeEditor?(): void;
   createWindow(): void;
   registerShortcuts(): void;
   setupAppEvents(): void;
@@ -147,6 +151,12 @@ export interface ElectronAPI {
   pin: () => Promise<void>;
   unpin: () => Promise<void>;
   setClickThrough: (enabled: boolean) => Promise<void>;
+  resize: (size: number) => Promise<{ success: boolean; width: number; height: number }>;
+
+  // Minimal editor
+  openEditor: () => Promise<{ success: boolean }>;
+  closeEditor: () => Promise<{ success: boolean }>;
+  saveEditorDraft: (draft: EditorDraft) => Promise<{ success: boolean; draft: EditorDraft }>;
 
   // Configuration
   loadConfig: () => Promise<HudConfig>;
@@ -165,6 +175,7 @@ export interface ElectronAPI {
   onAttention: (callback: () => void) => void;
   onAttentionEnd: (callback: () => void) => void;
   onTogglePin: (callback: () => void) => void;
+  onEditorDraftApplied: (callback: (draft: EditorDraft) => void) => void;
 }
 
 // UI Elements Interfaces
@@ -218,6 +229,7 @@ export interface GlobalShortcutHandlers {
   attention: () => void; // Ctrl+Alt+B
   togglePin: () => void; // Ctrl+Alt+P
   showHide: () => void; // Ctrl+Alt+H
+  openEditor: () => void; // Ctrl+Alt+E
 }
 
 // CSS Variable Mappings

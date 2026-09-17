@@ -78,11 +78,24 @@ const config = ConfigManager.getInstance();
 ##### `HudConfig`
 ```typescript
 interface HudConfig {
-  appearance: AppearanceConfig;
+  appearance: {
+    theme: string;
+    opacity: number;
+    pinnedOpacity: number;
+    background: string;
+    pinnedBackground: string;
+    borderColor: string;
+    pinnedBorderColor: string;
+  };
+  window: {
+    width: number;
+    height: number;
+    transparent: boolean;
+    alwaysOnTop: boolean;
+    position: { x: number; y: number };
+  };
   breathing: BreathingConfig;
-  accessibility: AccessibilityConfig;
-  editModeScale: number;
-  version: string;
+  controls: { pinButton: Record<string, number | string> };
 }
 ```
 
@@ -149,6 +162,7 @@ interface BreathingPattern {
   type: 'relaxing' | 'active' | 'flow';
   phases: BreathingPhase[];
   duration: number;
+  isNostrilBreathing?: boolean;
 }
 ```
 
@@ -158,8 +172,39 @@ interface BreathingPhase {
   name: 'inhale' | 'hold' | 'exhale' | 'pause';
   duration: number;        // Phase duration in seconds
   intensity: number;       // Phase intensity multiplier
+  airway?: 'nose' | 'mouth'; // Optional creator-authored route
+  nostril?: 'left' | 'right' | 'both';
 }
 ```
+
+#### `BreathingProgress`
+
+The engine emits this renderer-facing snapshot. Consumers must use it rather
+than independently calculating phase or cycle progress.
+
+```typescript
+interface BreathingProgress {
+  patternId: string;
+  phaseIndex: number;
+  phaseCount: number;
+  phaseName: BreathingPhase['name'];
+  airway?: BreathingPhase['airway'];
+  nostril?: BreathingPhase['nostril'];
+  phaseProgress: number;     // 0.0 - 1.0
+  phaseRemainingMs: number;
+  cycleProgress: number;     // 0.0 - 1.0
+}
+```
+
+`BreathingStatusView` projects this contract into the phase label, optional
+airway/nostril instruction, duration-weighted stage rail, and accessible stage
+announcement. An omitted airway leaves the instruction neutral; a specified
+airway is made visible. Nostril phases use the nostril label instead of
+duplicating a generic “through nose” suffix.
+The view implements a small sink boundary so callers set the pattern and
+runtime state explicitly, then pass engine snapshots to `render(progress)`.
+Semantic announcements are transition-only; visual rail writes are capped at
+10Hz.
 
 ### Theme System
 
@@ -182,6 +227,42 @@ interface ThemeConfig {
 }
 ```
 
+### Minimal editor
+
+The editor is opened in a separate normal Electron window with the renderer
+query `?view=editor`. It shares the renderer bundle but does not initialize the
+live breathing engine.
+
+```typescript
+interface EditorDraft {
+  readonly shapeId: string;
+  readonly patternId: string;
+  readonly themeId: string;
+  readonly frame: 'glass' | 'outline' | 'soft' | 'quiet';
+  readonly intensity: number;
+  readonly baseSize: number;
+  readonly inhaleMax: number;
+  readonly exhaleMin: number;
+  readonly hudSize: number;
+  readonly shapePosition: Readonly<{ x: number; y: number }>;
+}
+```
+
+The preload contract is intentionally narrow:
+
+```typescript
+await window.electronAPI.openEditor();
+await window.electronAPI.closeEditor();
+await window.electronAPI.saveEditorDraft(draft);
+window.electronAPI.onEditorDraftApplied((draft) => {
+  // HUD applies the normalized draft to its runtime engine.
+});
+```
+
+The main process validates and normalizes drafts before forwarding them to the
+HUD. The editor preview uses a deterministic sample phase; only the HUD engine
+owns real-time breathing progress.
+
 ## Animation System
 
 ### Breathing Calculation Pipeline
@@ -199,7 +280,7 @@ private animate(): void {
   this.animationId = requestAnimationFrame(() => {
     this.updateBreathingValue();    // Calculate new value
     this.renderShape();             // Render to canvas
-    this.updatePhaseDisplay();      // Update UI indicators
+    this.emitProgressSnapshot();    // Project authoritative timing to UI
     this.animate();                 // Schedule next frame
   });
 }

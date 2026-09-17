@@ -38,7 +38,7 @@ Complete documentation of Breathing HUD features and capabilities.
 
 **Features**:
 - Visible mode controls
-- Shape and pattern selection
+- Pattern selection
 - Standard breathing visualization
 - Clear phase indicators
 
@@ -95,11 +95,23 @@ The breathing cycle consists of four distinct phases:
 - **Duration**: Configurable (default: 2 seconds)
 - **State**: Rest period before next cycle
 
-### Progress Bar Features
-- **Phase Colors**: Different colors for each breathing phase
-- **Smooth Transitions**: 0.1s width transitions, 0.3s color changes
-- **Visual Effects**: Glow effects during hold phase
-- **Accessibility**: High contrast mode support
+### Stage Progress
+- **Segmented Cycle**: Each phase receives a duration-weighted segment
+- **Current Stage**: The active segment fills as the phase advances
+- **Stage Summary**: Displays the current stage and seconds remaining
+- **Accessibility**: Exposes progressbar text without announcing every frame
+
+### Alternate Nostril Breathing
+- **Active Nostril**: Explicitly identifies left, right, or both nostrils
+- **Plain-Language Cue**: Displays instructions such as “Inhale through left nostril”
+- **Side-Aware Arrows**: Directional arrows appear only on the active side
+- **Cycle Visibility**: The complete nostril sequence remains visible as stages
+- **Reduced Motion**: Directional cues become static and low motion
+
+### Optional Airway Guidance
+- **Creator-authored**: A pattern may specify `nose` or `mouth` for a phase.
+- **Neutral by default**: When omitted, the HUD says only “Inhale” or “Exhale” and leaves the user's airway choice open.
+- **Visible when specified**: The phase instruction, accessible status text, and editor preview expose the specified airway.
 
 ## Accessibility Features
 
@@ -188,9 +200,9 @@ legacy summary; use the linked reference for current behavior.
 
 ### Mode Navigation
 - The Mode button cycles Zen, Basic, and Advanced.
-- Edit is an independent overlay and is not part of the mode cycle.
+- Edit opens the separate taskbar-visible system editor and is not part of the mode cycle.
 
 ### Advanced Mode Controls
-- **ArrowLeft/ArrowRight**: Previous/next shape; in Edit, nudge a selected shape
-- **ArrowUp/ArrowDown**: Next/previous pattern; in Edit, nudge a selected shape
-- **Escape**: Deselect a shape in Edit
+- **ArrowLeft/ArrowRight**: In the editor, nudge the focused preview shape
+- **ArrowUp/ArrowDown**: Next/previous pattern; in the editor, nudge the focused preview shape
+- **Escape**: Cancel and close the editor without applying unsaved changes

@@ -14,6 +14,8 @@ export interface BreathingPhase {
   name: 'inhale' | 'hold' | 'exhale' | 'pause';
   duration: number;
   intensity: number;
+  /** Optional creator-authored route. Omitted means the user may choose. */
+  airway?: 'nose' | 'mouth';
   nostril?: 'left' | 'right' | 'both';
 }
 
@@ -24,6 +26,24 @@ export interface BreathingPattern {
   phases: BreathingPhase[];
   duration: number;
   isNostrilBreathing?: boolean;
+}
+
+/**
+ * Renderer-facing snapshot of the active phase.
+ *
+ * The engine owns timing; UI projections consume this immutable snapshot so
+ * they do not duplicate phase or cycle calculations.
+ */
+export interface BreathingProgress {
+  patternId: string;
+  phaseIndex: number;
+  phaseCount: number;
+  phaseName: BreathingPhase['name'];
+  airway?: BreathingPhase['airway'];
+  nostril?: BreathingPhase['nostril'];
+  phaseProgress: number;
+  phaseRemainingMs: number;
+  cycleProgress: number;
 }
 
 export interface BreathingSequenceStep {

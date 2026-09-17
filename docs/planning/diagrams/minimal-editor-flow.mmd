@@ -1,0 +1,28 @@
+flowchart LR
+    A[HUD / Edit] --> B[Open editor]
+    B --> C[Snapshot saved draft]
+    C --> D[Live preview]
+    D --> E{User changes a setting}
+    E --> F[Normalize bounded draft]
+    F --> D
+    D --> G[Save]
+    G --> H[Saving]
+    H --> I{Persistence result}
+    I -->|success| J[Saved status]
+    I -->|failure| K[Error status + preserve draft]
+    K --> G
+    D --> L[Cancel]
+    L --> M[Restore snapshot]
+    M --> A
+    D --> N[Reset defaults]
+    N --> O[Confirm]
+    O -->|yes| P[Apply default draft]
+    P --> D
+    O -->|no| D
+
+    classDef action fill:#d9f2ff,stroke:#4a90e2,color:#102030;
+    classDef state fill:#17202b,stroke:#6d7d90,color:#f4f6f8;
+    classDef decision fill:#29231a,stroke:#e3a54f,color:#fff5df;
+    class A,B,G,L,N action;
+    class C,D,F,H,J,K,M,P state;
+    class E,I,O decision;

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1420" height="820" viewBox="0 0 1420 820" role="img" aria-labelledby="title desc">
+  <title id="title">Breathing HUD redesigned user flows</title>
+  <desc id="desc">Flow diagram for first run, runtime mode changes, pinning, editor entry, and tray recovery.</desc>
+  <style>
+    .bg{fill:#0b0e13}.box{fill:#141d28;stroke:#4c6175;stroke-width:1.2}.action{fill:#203548;stroke:#8fc4e6;stroke-width:1.4}.state{fill:#17221f;stroke:#78d9ad;stroke-width:1.2}.decision{fill:#33291c;stroke:#f0b56d;stroke-width:1.2}.text{fill:#f5f7fa;font:600 15px system-ui,sans-serif}.muted{fill:#9ba9b9;font:400 11px system-ui,sans-serif}.label{fill:#78d9ad;font:700 10px system-ui,sans-serif;letter-spacing:1.2px}.arrow{stroke:#8095a8;stroke-width:2;fill:none;marker-end:url(#a)}.dash{stroke-dasharray:6 5}
+  </style>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#8095a8"/></marker></defs>
+  <rect class="bg" width="1420" height="820" rx="24"/>
+  <text class="label" x="38" y="40">BREATHING HUD / USER FLOWS</text><text class="muted" x="38" y="62">Onboarding is local UI state; modes, pinning, editor, and tray retain their existing ownership boundaries.</text>
+  <text class="text" x="38" y="105">First run</text>
+  <rect class="action" x="38" y="130" width="170" height="62" rx="10"/><text class="text" x="58" y="157">Launch HUD</text><text class="muted" x="58" y="176">paint runtime first</text>
+  <rect class="decision" x="272" y="130" width="180" height="62" rx="10"/><text class="text" x="290" y="157">Welcome seen?</text><text class="muted" x="290" y="176">versioned preference</text>
+  <rect class="action" x="516" y="95" width="190" height="62" rx="10"/><text class="text" x="536" y="122">Show welcome tile</text><text class="muted" x="536" y="141">3 click-to-advance cards</text>
+  <rect class="state" x="516" y="185" width="190" height="62" rx="10"/><text class="text" x="536" y="212">Show runtime HUD</text><text class="muted" x="536" y="231">no onboarding mutation</text>
+  <rect class="action" x="770" y="95" width="180" height="62" rx="10"/><text class="text" x="792" y="122">Next / Skip / Done</text><text class="muted" x="792" y="141">click or keyboard</text>
+  <rect class="state" x="770" y="185" width="180" height="62" rx="10"/><text class="text" x="792" y="212">Ready to breathe</text><text class="muted" x="792" y="231">start remains explicit</text>
+  <path class="arrow" d="M208 161 H272"/><path class="arrow" d="M452 149 H516"/><path class="arrow dash" d="M452 176 V216 H516"/><path class="arrow" d="M706 126 H770"/><path class="arrow" d="M706 216 H770"/>
+  <text class="muted" x="462" y="121">no</text><text class="muted" x="462" y="210">yes</text>
+
+  <text class="text" x="38" y="310">Runtime navigation</text>
+  <rect class="state" x="38" y="336" width="170" height="64" rx="10"/><text class="text" x="58" y="363">Runtime HUD</text><text class="muted" x="58" y="382">phase + progress</text>
+  <rect class="action" x="272" y="336" width="170" height="64" rx="10"/><text class="text" x="292" y="363">Mode button</text><text class="muted" x="292" y="382">Zen → Basic → Advanced</text>
+  <rect class="state" x="506" y="300" width="180" height="64" rx="10"/><text class="text" x="526" y="327">Zen</text><text class="muted" x="526" y="346">cue-first, rail hidden</text>
+  <rect class="state" x="506" y="382" width="180" height="64" rx="10"/><text class="text" x="526" y="409">Basic</text><text class="muted" x="526" y="428">rail + session context</text>
+  <rect class="state" x="506" y="464" width="180" height="64" rx="10"/><text class="text" x="526" y="491">Advanced</text><text class="muted" x="526" y="510">Tune sheet available</text>
+  <path class="arrow" d="M208 368 H272"/><path class="arrow" d="M442 368 H470 V332 H506"/><path class="arrow" d="M442 368 H506 V414"/><path class="arrow" d="M442 368 H470 V496 H506"/>
+
+  <text class="text" x="770" y="310">Orthogonal actions</text>
+  <rect class="action" x="770" y="336" width="190" height="64" rx="10"/><text class="text" x="792" y="363">Pin</text><text class="muted" x="792" y="382">window click-through</text>
+  <rect class="state" x="1016" y="336" width="190" height="64" rx="10"/><text class="text" x="1038" y="363">Pinned + prior mode</text><text class="muted" x="1038" y="382">unpin restores mode</text>
+  <rect class="action" x="770" y="436" width="190" height="64" rx="10"/><text class="text" x="792" y="463">Edit</text><text class="muted" x="792" y="482">existing bridge / snapshot</text>
+  <rect class="state" x="1016" y="436" width="190" height="64" rx="10"/><text class="text" x="1038" y="463">Minimal editor</text><text class="muted" x="1038" y="482">save / cancel / reset</text>
+  <rect class="action" x="770" y="536" width="190" height="64" rx="10"/><text class="text" x="792" y="563">Hide / close</text><text class="muted" x="792" y="582">main window hides</text>
+  <rect class="state" x="1016" y="536" width="190" height="64" rx="10"/><text class="text" x="1038" y="563">Tray recovery</text><text class="muted" x="1038" y="582">Show HUD / Edit / Quit</text>
+  <path class="arrow" d="M960 368 H1016"/><path class="arrow" d="M960 468 H1016"/><path class="arrow" d="M960 568 H1016"/>
+
+  <text class="text" x="38" y="624">Failure and accessibility overlays</text>
+  <rect class="decision" x="38" y="650" width="190" height="64" rx="10"/><text class="text" x="60" y="677">Preview / engine issue?</text><text class="muted" x="60" y="696">preserve stable space</text>
+  <rect class="state" x="274" y="650" width="190" height="64" rx="10"/><text class="text" x="296" y="677">Error or disabled</text><text class="muted" x="296" y="696">message + retry/inspect</text>
+  <rect class="state" x="510" y="650" width="240" height="64" rx="10"/><text class="text" x="532" y="677">Reduced motion</text><text class="muted" x="532" y="696">text cue remains authoritative</text>
+  <path class="arrow" d="M228 682 H274"/><path class="arrow" d="M464 682 H510"/>
+</svg>

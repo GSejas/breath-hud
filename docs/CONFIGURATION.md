@@ -4,23 +4,26 @@ Complete reference for all configuration options and settings.
 
 ## Configuration Files
 
-### `user-config.json` (User Settings)
-Primary configuration file for user customizations:
+### `breathingHudConfig` (Editor and HUD settings)
+The renderer persists the normalized editor draft in local storage. Save is
+explicit; Cancel leaves this value unchanged and Reset requires confirmation.
 
 ```json
 {
-  "editModeScale": 1,
-  "description": "User configuration for Breathing HUD",
-  "features": {
-    "editModeScale": {
-      "description": "Bounded zoom multiplier when entering edit mode (1-1.25)",
-      "default": 1,
-      "min": 1,
-      "max": 1.25
-    }
-  }
+  "shapeId": "circle",
+  "patternId": "zen-simple",
+  "themeId": "ocean",
+  "frame": "glass",
+  "intensity": 0.7,
+  "hudSize": 300,
+  "audioEnabled": false,
+  "shapePosition": { "x": 0, "y": 0 }
 }
 ```
+
+`audioEnabled` is an explicit opt-in for the local tonal MP3 cues. The
+preference is independent of reduced motion and does not affect pattern timing.
+See [Audio Cues Design](planning/AUDIO_CUES_DESIGN.md) for the asset contract.
 
 ### `enhanced-hud-config.json` (Application Settings)
 System-level configuration for window and behavior:
@@ -181,16 +184,19 @@ config.updateAppearance({ theme: 'custom' });
 
 ## Mode-Specific Settings
 
-### Edit Mode Configuration
+### Editor Configuration
 ```json
 {
-  "editModeScale": 1,
-  "editMode": {
-    "dragSensitivity": 1.0,
-    "snapToGrid": false,
-    "gridSize": 10,
-    "showHelpers": true
-  }
+  "shapeId": "circle",
+  "patternId": "zen-simple",
+  "themeId": "ocean",
+  "frame": "glass",
+  "intensity": 0.7,
+  "baseSize": 0.6,
+  "inhaleMax": 1.0,
+  "exhaleMin": 0.4,
+  "hudSize": 300,
+  "shapePosition": { "x": 0, "y": 0 }
 }
 ```
 
@@ -220,12 +226,13 @@ const advancedConfig = {
 ```typescript
 const storageKey = 'breathingHudConfig';
 const savedConfig = {
-  appearance: { /* AppearanceConfig */ },
-  breathing: { /* BreathingConfig */ },
-  accessibility: { /* AccessibilityConfig */ },
-  editModeScale: 1,
-  version: "1.0.0",
-  lastModified: "2025-01-15T10:30:00Z"
+  shapeId: "circle",
+  patternId: "zen-simple",
+  themeId: "ocean",
+  frame: "glass",
+  intensity: 0.7,
+  hudSize: 300,
+  shapePosition: { x: 0, y: 0 }
 };
 ```
 

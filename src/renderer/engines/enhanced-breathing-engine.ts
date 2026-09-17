@@ -6,7 +6,8 @@
 import type {
   BreathingShape,
   BreathingPattern,
-  BreathingPhase
+  BreathingPhase,
+  BreathingProgress
 } from '../../shared/types/breathing.types';
 
 import {
@@ -16,6 +17,12 @@ import {
   getPhaseOpacity,
   getPhaseColor
 } from '../utils';
+import {
+  getBreathingArrowAnchor,
+  getBreathingArrowPositions,
+  getGenericBreathingArrowPositions,
+  type BreathingArrowPosition,
+} from '../utils/arrow-cues';
 
 // Enhanced Breathing Engine (browser-compatible)
 export class EnhancedBreathingEngine {
@@ -46,7 +53,9 @@ export class EnhancedBreathingEngine {
   private reduceMotion = false;
   
   private onPhaseChange?: (phase: BreathingPhase, progress: number) => void;
+  private onProgress?: (progress: BreathingProgress) => void;
   private onCycleComplete?: () => void;
+  private lastPhaseChangeKey: string | null = null;
 
   constructor(canvas: HTMLElement, shape: BreathingShape, pattern: BreathingPattern) {
     this.canvas = canvas;
@@ -72,6 +81,13 @@ export class EnhancedBreathingEngine {
 
   setPhaseChangeCallback(callback: (phase: BreathingPhase, progress: number) => void) {
     this.onPhaseChange = callback;
+  }
+
+  /**
+   * Subscribe to the authoritative phase/cycle snapshot used by UI views.
+   */
+  setProgressCallback(callback: (progress: BreathingProgress) => void) {
+    this.onProgress = callback;
   }
 
   setCycleCompleteCallback(callback: () => void) {
@@ -109,6 +125,7 @@ export class EnhancedBreathingEngine {
   updatePattern(pattern: BreathingPattern) {
     this.currentPattern = pattern;
     this.resetPhase();
+    this.lastPhaseChangeKey = null;
   }
 
   setPattern(pattern: BreathingPattern) {
@@ -168,7 +185,12 @@ export class EnhancedBreathingEngine {
     this.canvas.appendChild(canvas);
     this.canvasElement = canvas;
     this.canvasContext = canvas.getContext('2d') || undefined;
-    
+
+    if (!this.arrowContext || !this.canvasContext) {
+      this.canvas.innerHTML = '';
+      throw new Error('Canvas rendering context is unavailable');
+    }
+
     // Initial render
     this.renderShape();
   }
@@ -327,6 +349,7 @@ export class EnhancedBreathingEngine {
     this.startTime = Date.now();
     this.phaseStartTime = this.startTime;
     this.currentPhaseIndex = 0;
+    this.lastPhaseChangeKey = null;
     this.animate();
   }
 
@@ -363,8 +386,14 @@ export class EnhancedBreathingEngine {
     this.animateShape(breathingValue, currentPhase, phaseProgress);
     this.renderArrows(currentPhase, phaseProgress);
 
-    if (this.onPhaseChange) {
+    if (this.onProgress) {
+      this.onProgress(this.createProgressSnapshot(currentPhase, phaseProgress));
+    }
+
+    const phaseChangeKey = `${this.currentPattern.id}:${this.currentPhaseIndex}`;
+    if (this.onPhaseChange && phaseChangeKey !== this.lastPhaseChangeKey) {
       this.onPhaseChange(currentPhase, phaseProgress);
+      this.lastPhaseChangeKey = phaseChangeKey;
     }
 
     // Phase transition with smooth continuity
@@ -403,18 +432,23 @@ export class EnhancedBreathingEngine {
       this.exhaleMin
     );
 
+    // Apply phase/global intensity around the neutral base size. This keeps
+    // the setting meaningful without changing the timing contract.
+    const normalizedIntensity = Math.max(0, Math.min(1, intensity));
+    const intensityAdjustedValue = this.baseSize + ((value - this.baseSize) * normalizedIntensity);
+
     // Apply reduced motion: if enabled, reduce animation smoothness
     if (this.reduceMotion) {
       // For reduced motion, use simple linear interpolation with dampened movement
-      const dampedTarget = this.baseSize + ((value - this.baseSize) * 0.3); // Reduce movement by 70%
+      const dampedTarget = this.baseSize + ((intensityAdjustedValue - this.baseSize) * 0.3); // Reduce movement by 70%
       return lerp(this.previousBreathingValue, dampedTarget, 0.1);
     }
 
     // Normal smooth transition with velocity-based lerping
-    const velocityFactor = Math.abs(value - this.previousBreathingValue) * 0.05;
+    const velocityFactor = Math.abs(intensityAdjustedValue - this.previousBreathingValue) * 0.05;
     const lerpFactor = Math.max(0.02, Math.min(0.15, 0.08 + velocityFactor));
     
-    const smoothValue = lerp(this.previousBreathingValue, value, lerpFactor);
+    const smoothValue = lerp(this.previousBreathingValue, intensityAdjustedValue, lerpFactor);
     this.previousBreathingValue = smoothValue;
     
     return smoothValue;
@@ -614,36 +648,60 @@ export class EnhancedBreathingEngine {
     const direction = phase.name === 'inhale' ? 'in' : phase.name === 'exhale' ? 'out' : null;
     if (!direction) return;
 
-    // Calculate arrow opacity based on progress (fade in at start, fade out at end)
-    const opacity = progress < 0.3 ? progress / 0.3 : progress > 0.7 ? (1 - progress) / 0.3 : 1;
+    // Reduced motion keeps the directional cue visible but static.
+    const maxOpacity = phase.nostril ? 0.65 : 0.45;
+    const fade = progress < 0.3 ? progress / 0.3 : progress > 0.7 ? (1 - progress) / 0.3 : 1;
+    const opacity = this.reduceMotion ? maxOpacity : maxOpacity * fade;
     if (opacity < 0.1) return;
 
-    // Get theme color for arrows
-    const themeColor = phase.name === 'inhale' ? 'rgb(100, 200, 255)' : 'rgb(200, 100, 255)';
-    const arrowColor = `rgba(${themeColor.match(/\d+/g)?.join(', ')}, ${opacity})`;
+    const computedStyle = getComputedStyle(document.documentElement);
+    const arrowColor = computedStyle
+      .getPropertyValue(phase.name === 'inhale' ? '--theme-primary' : '--theme-secondary')
+      .trim() || (phase.name === 'inhale' ? 'rgb(100, 200, 255)' : 'rgb(200, 100, 255)');
 
     // Center of canvas
-    const centerX = 100;
-    const centerY = 100;
+    const { centerX, centerY } = getBreathingArrowAnchor(this.shapePosition);
     const radius = 70; // Distance from center where arrows appear
 
-    // Draw arrows on all 4 sides
-    const positions = [
-      { x: centerX, y: centerY - radius, direction: 'up' },    // Top
-      { x: centerX, y: centerY + radius, direction: 'down' },  // Bottom
-      { x: centerX - radius, y: centerY, direction: 'left' },  // Left
-      { x: centerX + radius, y: centerY, direction: 'right' }, // Right
-    ];
+    const positions: BreathingArrowPosition[] = phase.nostril
+      ? getBreathingArrowPositions(phase.nostril, centerX, centerY, radius)
+      : getGenericBreathingArrowPositions(centerX, centerY, radius);
 
     for (const pos of positions) {
       if (direction === 'in') {
         // Inhale: arrows point inward toward center
-        this.drawArrowAtPosition(pos.x, pos.y, pos.direction === 'up' ? 'down' : pos.direction === 'down' ? 'up' : pos.direction === 'left' ? 'right' : 'left', arrowColor, opacity);
+        this.drawArrowAtPosition(pos.x, pos.y, pos.inwardDirection, arrowColor, opacity);
       } else {
         // Exhale: arrows point outward from center
-        this.drawArrowAtPosition(pos.x, pos.y, pos.direction as 'up' | 'down' | 'left' | 'right', arrowColor, opacity);
+        this.drawArrowAtPosition(pos.x, pos.y, pos.outwardDirection, arrowColor, opacity);
       }
     }
+  }
+
+  private createProgressSnapshot(phase: BreathingPhase, phaseProgress: number): BreathingProgress {
+    const phaseCount = this.currentPattern.phases.length;
+    const completedDuration = this.currentPattern.phases
+      .slice(0, this.currentPhaseIndex)
+      .reduce((total, current) => total + current.duration, 0);
+    const cycleDuration = this.currentPattern.phases
+      .reduce((total, current) => total + current.duration, 0);
+    const safeCycleDuration = cycleDuration > 0 ? cycleDuration : 1;
+    const safePhaseProgress = Math.max(0, Math.min(1, phaseProgress));
+
+    return {
+      patternId: this.currentPattern.id,
+      phaseIndex: this.currentPhaseIndex,
+      phaseCount,
+      phaseName: phase.name,
+      airway: phase.airway,
+      nostril: phase.nostril,
+      phaseProgress: safePhaseProgress,
+      phaseRemainingMs: Math.max(0, (phase.duration * (1 - safePhaseProgress)) * 1000),
+      cycleProgress: Math.max(
+        0,
+        Math.min(1, (completedDuration + (phase.duration * safePhaseProgress)) / safeCycleDuration)
+      ),
+    };
   }
 
   private drawArrowAtPosition(

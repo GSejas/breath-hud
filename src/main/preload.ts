@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import type { EditorDraft } from '../shared/types/editor.types';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -10,6 +11,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   unpin: () => ipcRenderer.invoke('window:unpin'),
   setClickThrough: (enabled: boolean) => ipcRenderer.invoke('window:set-click-through', enabled),
   resize: (size: number) => ipcRenderer.invoke('window:resize', size),
+
+  // Minimal editor window and draft bridge
+  openEditor: () => ipcRenderer.invoke('editor:open'),
+  closeEditor: () => ipcRenderer.invoke('editor:close'),
+  saveEditorDraft: (draft: EditorDraft) => ipcRenderer.invoke('editor:save-draft', draft),
 
   // Configuration
   loadConfig: () => ipcRenderer.invoke('config:load'),
@@ -46,6 +52,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onTogglePin: (callback: () => void) => {
     ipcRenderer.on('hud:toggle-pin', () => callback());
   },
+  onEditorDraftApplied: (callback: (draft: EditorDraft) => void) => {
+    ipcRenderer.on('hud:editor-draft-applied', (_event, draft) => callback(draft));
+  },
 });
 
 // Type declaration for TypeScript
@@ -58,6 +67,9 @@ declare global {
       unpin: () => Promise<void>;
       setClickThrough: (enabled: boolean) => Promise<void>;
       resize: (size: number) => Promise<{ success: boolean; width: number; height: number }>;
+      openEditor: () => Promise<{ success: boolean }>;
+      closeEditor: () => Promise<{ success: boolean }>;
+      saveEditorDraft: (draft: EditorDraft) => Promise<{ success: boolean; draft: EditorDraft }>;
       loadConfig: () => Promise<any>;
       getSettings: () => Promise<any>;
       updateSettings: (settings: any) => Promise<void>;
@@ -68,6 +80,7 @@ declare global {
       onAttention: (callback: () => void) => void;
       onAttentionEnd: (callback: () => void) => void;
       onTogglePin: (callback: () => void) => void;
+      onEditorDraftApplied: (callback: (draft: EditorDraft) => void) => void;
     };
   }
 }
