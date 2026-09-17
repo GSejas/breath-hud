@@ -4,6 +4,7 @@
  */
 
 import type { StateManager } from '../../services';
+import { EditPanel } from '../../ui/edit-panel';
 
 export type EditModeListener = (editMode: boolean) => void;
 
@@ -12,6 +13,7 @@ export class EditModeController {
   private listeners: Set<EditModeListener> = new Set();
   private stateManager: StateManager | null = null;
   private editPanelElement: HTMLElement | null = null;
+  private editPanel: EditPanel | null = null;
 
   constructor() {
     // Initialize
@@ -29,6 +31,31 @@ export class EditModeController {
    */
   setEditPanel(element: HTMLElement): void {
     this.editPanelElement = element;
+    
+    // Initialize EditPanel component
+    if (!this.editPanel) {
+      this.editPanel = new EditPanel();
+      const panelElement = this.editPanel.create();
+      document.body.appendChild(panelElement);
+    }
+  }
+
+  /**
+   * Initialize EditPanel component
+   */
+  initializeEditPanel(): void {
+    if (!this.editPanel) {
+      this.editPanel = new EditPanel();
+      const panelElement = this.editPanel.create();
+      document.body.appendChild(panelElement);
+    }
+  }
+
+  /**
+   * Get EditPanel instance
+   */
+  getEditPanel(): EditPanel | null {
+    return this.editPanel;
   }
 
   /**
@@ -97,14 +124,22 @@ export class EditModeController {
    * Update edit panel visibility
    */
   private updateEditPanelVisibility(): void {
-    if (!this.editPanelElement) return;
+    if (this.editPanel) {
+      if (this.isEditMode) {
+        this.editPanel.show();
+      } else {
+        this.editPanel.hide();
+      }
+    }
 
-    if (this.isEditMode) {
-      this.editPanelElement.style.display = 'block';
-      this.editPanelElement.style.opacity = '1';
-    } else {
-      this.editPanelElement.style.opacity = '0';
-      this.editPanelElement.style.display = 'none';
+    if (this.editPanelElement) {
+      if (this.isEditMode) {
+        this.editPanelElement.style.display = 'block';
+        this.editPanelElement.style.opacity = '1';
+      } else {
+        this.editPanelElement.style.opacity = '0';
+        this.editPanelElement.style.display = 'none';
+      }
     }
   }
 
@@ -127,5 +162,16 @@ export class EditModeController {
     this.listeners.forEach((listener) => {
       listener(this.isEditMode);
     });
+  }
+
+  /**
+   * Dispose of controller and cleanup resources
+   */
+  dispose(): void {
+    if (this.editPanel) {
+      this.editPanel.dispose();
+      this.editPanel = null;
+    }
+    this.listeners.clear();
   }
 }

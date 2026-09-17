@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   pin: () => ipcRenderer.invoke('window:pin'),
   unpin: () => ipcRenderer.invoke('window:unpin'),
   setClickThrough: (enabled: boolean) => ipcRenderer.invoke('window:set-click-through', enabled),
+  resize: (size: number) => ipcRenderer.invoke('window:resize', size),
 
   // Configuration
   loadConfig: () => ipcRenderer.invoke('config:load'),
@@ -56,6 +57,7 @@ declare global {
       pin: () => Promise<void>;
       unpin: () => Promise<void>;
       setClickThrough: (enabled: boolean) => Promise<void>;
+      resize: (size: number) => Promise<{ success: boolean; width: number; height: number }>;
       loadConfig: () => Promise<any>;
       getSettings: () => Promise<any>;
       updateSettings: (settings: any) => Promise<void>;

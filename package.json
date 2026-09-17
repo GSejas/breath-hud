@@ -6,26 +6,25 @@
   "description": "Desktop breathing meditation HUD overlay application",
   "license": "MIT",
   "scripts": {
-    "build": "tsc && webpack",
-    "build:main": "tsc",
-    "build:renderer": "webpack",
+    "build": "tsc -b tsconfig.build.json && webpack --config build-config/webpack.config.js",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "webpack --config build-config/webpack.config.js",
     "start": "electron dist/main/main.js",
     "dev": "npm run build && electron dist/main/main.js",
     "dev:watch": "tsc --watch",
-    "test": "jest",
+    "test": "npx jest --config build-config/jest.config.js --rootDir . --no-cache",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "tsc --noEmit",
+    "lint": "tsc -p tsconfig.build.json --noEmit",
     "clean": "rimraf dist coverage",
     "package": "npm run build && electron-builder",
     "dist": "npm run build && electron-builder --publish=never",
     "ci": "npm run lint && npm run test && npm run build"
   },
-  "dependencies": {
-    "electron": "^26.6.10"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "electron": "^26.6.10",
     "@types/jsdom": "^21.1.7",
     "cross-env": "^7.0.3",
     "electron-builder": "^24.0.0",
@@ -38,6 +37,9 @@
     "typescript": "^5.0.0",
     "webpack": "^5.101.2",
     "webpack-cli": "^6.0.1"
+  },
+  "engines": {
+    "node": ">=16"
   },
   "build": {
     "appId": "com.breathingshapes.hud",
@@ -53,7 +55,12 @@
       "target": "dmg"
     },
     "win": {
-      "target": "nsis"
+      "target": ["nsis", "portable"],
+      "certificateFile": null,
+      "certificatePassword": null,
+      "signingHashAlgorithms": null,
+      "signAndEditExecutable": false,
+      "sign": null
     },
     "linux": {
       "target": "AppImage"

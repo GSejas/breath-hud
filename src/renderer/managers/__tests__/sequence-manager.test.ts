@@ -205,6 +205,31 @@ describe('BreathingSequenceManager', () => {
     });
   });
 
+  describe('previewSequence', () => {
+    it('should preview the first pattern without starting the sequence', () => {
+      manager.setSequence(mockSequence);
+
+      manager.previewSequence();
+
+      expect(manager.isActive()).toBe(false);
+      expect(mockOnPatternChange).toHaveBeenCalledWith(
+        mockSequence.steps[0].pattern,
+        expect.stringContaining('Step 1/2'),
+      );
+    });
+
+    it('should not replace the active sequence state', () => {
+      manager.setSequence(mockSequence);
+      manager.startSequence();
+      mockOnPatternChange.mockClear();
+
+      manager.previewSequence();
+
+      expect(manager.isActive()).toBe(true);
+      expect(mockOnPatternChange).not.toHaveBeenCalled();
+    });
+  });
+
   describe('getSequenceInfo', () => {
     it('should return sequence info when active', () => {
       manager.setSequence(mockSequence);

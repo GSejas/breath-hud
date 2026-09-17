@@ -301,6 +301,142 @@ export class CanvasRenderer {
   }
 
   /**
+   * Draw directional arrows indicating breathing phase
+   * @param direction 'in' for inhale (upward), 'out' for exhale (downward)
+   * @param centerX X coordinate of arrow center
+   * @param centerY Y coordinate of arrow center
+   * @param color Arrow color
+   * @param opacity Arrow opacity (0-1)
+   * @param arrowSize Size of arrows (number of arrows or size multiplier)
+   */
+  public drawDirectionalArrows(
+    direction: 'in' | 'out',
+    centerX: number,
+    centerY: number,
+    color: string,
+    opacity: number,
+    arrowSize: number = 3
+  ): void {
+    if (!this.context) return;
+
+    const ctx = this.context;
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // Draw multiple arrows based on size
+    const arrowCount = Math.max(2, Math.min(5, Math.floor(arrowSize)));
+    const spacing = 40 / arrowCount;
+    const startY = centerY - (spacing * (arrowCount - 1)) / 2;
+
+    for (let i = 0; i < arrowCount; i++) {
+      const y = startY + i * spacing;
+      const arrowX = centerX;
+      const arrowY = y;
+      const arrowLength = 20;
+      const headSize = 8;
+
+      if (direction === 'in') {
+        // Upward arrow (inhale)
+        // Shaft
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY + arrowLength);
+        ctx.lineTo(arrowX, arrowY);
+        ctx.stroke();
+
+        // Arrowhead pointing up
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY);
+        ctx.lineTo(arrowX - headSize / 2, arrowY + headSize);
+        ctx.lineTo(arrowX + headSize / 2, arrowY + headSize);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        // Downward arrow (exhale)
+        // Shaft
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY - arrowLength);
+        ctx.lineTo(arrowX, arrowY);
+        ctx.stroke();
+
+        // Arrowhead pointing down
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY);
+        ctx.lineTo(arrowX - headSize / 2, arrowY - headSize);
+        ctx.lineTo(arrowX + headSize / 2, arrowY - headSize);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  /**
+   * Draw single arrow for minimal visualization
+   * @param direction 'in' or 'out'
+   * @param centerX X coordinate
+   * @param centerY Y coordinate
+   * @param color Arrow color
+   * @param opacity Arrow opacity
+   */
+  public drawSingleArrow(
+    direction: 'in' | 'out',
+    centerX: number,
+    centerY: number,
+    color: string,
+    opacity: number
+  ): void {
+    if (!this.context) return;
+
+    const ctx = this.context;
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    const arrowLength = 30;
+    const headSize = 10;
+
+    if (direction === 'in') {
+      // Upward arrow
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY + arrowLength);
+      ctx.lineTo(centerX, centerY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(centerX - headSize / 2, centerY + headSize);
+      ctx.lineTo(centerX + headSize / 2, centerY + headSize);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      // Downward arrow
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY - arrowLength);
+      ctx.lineTo(centerX, centerY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(centerX - headSize / 2, centerY - headSize);
+      ctx.lineTo(centerX + headSize / 2, centerY - headSize);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  /**
    * Render a shape to canvas
    */
   public render(

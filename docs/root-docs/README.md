@@ -33,7 +33,7 @@ npm start
 ### Basic Usage
 
 1. **Launch**: Run `npm start` to open the breathing HUD
-2. **Choose Mode**: Click mode buttons (Z/B/A) for Zen/Basic/Advanced
+2. **Choose Mode**: Click the Mode button to cycle Zen, Basic, and Advanced
 3. **Pin for Background**: Click pin button (📌) for click-through overlay
 4. **Customize**: Use Advanced mode sliders for breathing control
 

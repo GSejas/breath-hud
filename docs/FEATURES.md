@@ -177,17 +177,20 @@ The breathing cycle consists of four distinct phases:
 
 ## Keyboard Shortcuts
 
+The implementation-verified shortcut and control reference is in
+[Controls Reference](CONTROLS.md). The shortcuts below are retained only as a
+legacy summary; use the linked reference for current behavior.
+
 ### Global Shortcuts
-- **Space**: Play/pause breathing animation
-- **P**: Toggle pin mode
-- **Esc**: Exit current mode or close application
+- **Ctrl+Alt+B**: Bring the HUD to the foreground
+- **Ctrl+Alt+P**: Toggle pin/click-through mode
+- **Ctrl+Alt+H**: Show or hide the HUD window
 
 ### Mode Navigation
-- **Z**: Switch to Zen mode
-- **B**: Switch to Basic mode  
-- **A**: Switch to Advanced mode
+- The Mode button cycles Zen, Basic, and Advanced.
+- Edit is an independent overlay and is not part of the mode cycle.
 
 ### Advanced Mode Controls
-- **↑/↓**: Adjust base size
-- **←/→**: Adjust inhale/exhale ratio
-- **+/-**: Increase/decrease overall intensity
+- **ArrowLeft/ArrowRight**: Previous/next shape; in Edit, nudge a selected shape
+- **ArrowUp/ArrowDown**: Next/previous pattern; in Edit, nudge a selected shape
+- **Escape**: Deselect a shape in Edit

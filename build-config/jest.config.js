@@ -1,5 +1,13 @@
+const path = require('path');
+
 module.exports = {
+  // Ensure <rootDir> points to repository root for paths like <rootDir>/src
+  rootDir: path.resolve(__dirname, '..'),
   preset: 'ts-jest',
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
   projects: [
     {
       displayName: 'node',

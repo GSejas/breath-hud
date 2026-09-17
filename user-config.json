@@ -1,20 +1,18 @@
 {
-  "editModeScale": 3,
+  "editModeScale": 1,
   "description": "User configuration for Breathing HUD",
   "features": {
     "editModeScale": {
-      "description": "Scale multiplier when entering edit mode (1-20)",
-      "default": 3,
+      "description": "Bounded zoom multiplier when entering edit mode (1-1.25)",
+      "default": 1,
       "min": 1,
-      "max": 20
+      "max": 1.25
     }
   },
   "notes": [
-    "editModeScale: Controls how much the HUD grows in edit mode",
+    "editModeScale: Controls the small, bounded edit-mode zoom",
     "- 1 = no scaling (same size)",
-    "- 3 = 3x larger (default, good balance of size and visibility)",
-    "- 5-10 = larger scaling (may go off-screen)",
-    "- 20 = maximum scaling",
+    "- 1.25 = maximum supported zoom",
     "",
     "To apply changes:",
     "1. Edit this file",

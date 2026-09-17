@@ -1,7 +1,8 @@
-import { ipcMain, BrowserWindow } from 'electron';
+import { ipcMain } from 'electron';
 import { ConfigManager } from '../shared/config-manager';
+import type { IHudApplication } from '../shared/types';
 
-export function setupIPCHandlers(hudApp: any) {
+export function setupIPCHandlers(hudApp: Pick<IHudApplication, 'getMainWindow'>) {
   ipcMain.handle('window:pin', async () => {
     const window = hudApp.getMainWindow();
     if (window) {
@@ -49,6 +50,21 @@ export function setupIPCHandlers(hudApp: any) {
       return { success: true };
     }
     throw new Error('Main window not available');
+  });
+
+  ipcMain.handle('window:resize', async (_event, requestedSize: unknown) => {
+    const window = hudApp.getMainWindow();
+    if (!window) {
+      throw new Error('Main window not available');
+    }
+
+    if (typeof requestedSize !== 'number' || !Number.isFinite(requestedSize)) {
+      throw new Error('Invalid window size');
+    }
+
+    const size = Math.round(Math.max(240, Math.min(600, requestedSize)));
+    window.setSize(size, size);
+    return { success: true, width: size, height: size };
   });
 
   // Configuration handler

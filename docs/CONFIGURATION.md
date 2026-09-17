@@ -9,14 +9,14 @@ Primary configuration file for user customizations:
 
 ```json
 {
-  "editModeScale": 3,
+  "editModeScale": 1,
   "description": "User configuration for Breathing HUD",
   "features": {
     "editModeScale": {
-      "description": "Scale multiplier when entering edit mode (1-20)",
-      "default": 3,
+      "description": "Bounded zoom multiplier when entering edit mode (1-1.25)",
+      "default": 1,
       "min": 1,
-      "max": 20
+      "max": 1.25
     }
   }
 }
@@ -184,7 +184,7 @@ config.updateAppearance({ theme: 'custom' });
 ### Edit Mode Configuration
 ```json
 {
-  "editModeScale": 3,
+  "editModeScale": 1,
   "editMode": {
     "dragSensitivity": 1.0,
     "snapToGrid": false,
@@ -223,7 +223,7 @@ const savedConfig = {
   appearance: { /* AppearanceConfig */ },
   breathing: { /* BreathingConfig */ },
   accessibility: { /* AccessibilityConfig */ },
-  editModeScale: 3,
+  editModeScale: 1,
   version: "1.0.0",
   lastModified: "2025-01-15T10:30:00Z"
 };

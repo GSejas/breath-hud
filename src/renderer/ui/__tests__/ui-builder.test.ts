@@ -6,7 +6,12 @@ describe('UIBuilder', () => {
 
   beforeEach(() => {
     container = document.createElement('div');
+    document.body.appendChild(container);
     builder = new UIBuilder(container);
+  });
+
+  afterEach(() => {
+    document.body.removeChild(container);
   });
 
   describe('buildUI', () => {

@@ -21,6 +21,9 @@
             --control-bg: rgba(255, 255, 255, 0.1);
             --control-hover: rgba(255, 255, 255, 0.2);
             --control-active: rgba(255, 255, 255, 0.3);
+
+            /* Updated by the renderer when the HUD is resized. */
+            --hud-scale: 1;
         }
         
         body {
@@ -90,7 +93,7 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%); /* True center: (150px, 150px) */
+            transform: translate(-50%, -50%) scale(var(--hud-scale, 1));
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -117,8 +120,10 @@
         }
         
         .control-btn {
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
             border-radius: 50%;
             border: 1px solid rgba(255, 255, 255, 0.3);
             background: var(--control-bg);
@@ -133,8 +138,10 @@
         }
         
         .control-btn.small {
-            width: 20px;
-            height: 20px;
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            min-height: 28px;
             font-size: 10px;
         }
         
@@ -146,6 +153,13 @@
         
         .control-btn:active {
             transform: scale(0.95);
+        }
+
+        .control-btn:focus-visible,
+        .mode-btn:focus-visible,
+        input:focus-visible {
+            outline: 2px solid var(--theme-accent);
+            outline-offset: 3px;
         }
         
         .control-btn.pinned {
@@ -366,6 +380,8 @@
             z-index: 7;
             color: var(--theme-accent);
             min-width: 80px;
+            transform: scale(var(--hud-scale, 1));
+            transform-origin: bottom left;
         }
         
         .shape-pattern-display div {
@@ -392,9 +408,11 @@
         }
         
         .mode-btn-compact {
-            width: 35px !important;
-            height: 18px !important;
-            font-size: 8px !important;
+            width: 48px !important;
+            height: 32px !important;
+            min-width: 48px !important;
+            min-height: 32px !important;
+            font-size: 9px !important;
             font-weight: 600 !important;
             text-transform: uppercase !important;
             border-radius: 9px !important;
@@ -407,8 +425,15 @@
         .hud-container:not(.pinned):not(.auto-faded):hover .sequence-controls,
         .hud-container:not(.pinned):not(.auto-faded):hover .shape-navigation-left,
         .hud-container:not(.pinned):not(.auto-faded):hover .shape-navigation-right,
-        .hud-container:not(.pinned):not(.auto-faded):hover .mode-button-corner {
+        .hud-container:not(.pinned):not(.auto-faded):hover .mode-button-corner,
+        .hud-container:not(.pinned):not(.auto-faded):focus-within .enhanced-controls,
+        .hud-container:not(.pinned):not(.auto-faded):focus-within .sequence-controls,
+        .hud-container:not(.pinned):not(.auto-faded):focus-within .shape-navigation-left,
+        .hud-container:not(.pinned):not(.auto-faded):focus-within .shape-navigation-right,
+        .hud-container:not(.pinned):not(.auto-faded):focus-within .mode-button-corner {
             opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
             transition: opacity 0.3s ease;
         }
         
@@ -419,12 +444,14 @@
             transition: all 1s ease-out;
         }
         
-        .hud-container.auto-faded .enhanced-controls,
-        .hud-container.auto-faded .sequence-controls,
-        .hud-container.auto-faded .shape-navigation-left,
-        .hud-container.auto-faded .shape-navigation-right,
-        .hud-container.auto-faded .mode-button-corner {
+        .hud-container.auto-faded:not(:focus-within) .enhanced-controls,
+        .hud-container.auto-faded:not(:focus-within) .sequence-controls,
+        .hud-container.auto-faded:not(:focus-within) .shape-navigation-left,
+        .hud-container.auto-faded:not(:focus-within) .shape-navigation-right,
+        .hud-container.auto-faded:not(:focus-within) .mode-button-corner {
             opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
             transition: opacity 1s ease-out;
         }
         
@@ -447,12 +474,14 @@
         }
         
         /* Non-pinned default state - controls initially hidden */
-        .hud-container:not(.pinned):not(:hover) .enhanced-controls,
-        .hud-container:not(.pinned):not(:hover) .sequence-controls,
-        .hud-container:not(.pinned):not(:hover) .shape-navigation-left,
-        .hud-container:not(.pinned):not(:hover) .shape-navigation-right,
-        .hud-container:not(.pinned):not(:hover) .mode-button-corner {
+        .hud-container:not(.pinned):not(:hover):not(:focus-within) .enhanced-controls,
+        .hud-container:not(.pinned):not(:hover):not(:focus-within) .sequence-controls,
+        .hud-container:not(.pinned):not(:hover):not(:focus-within) .shape-navigation-left,
+        .hud-container:not(.pinned):not(:hover):not(:focus-within) .shape-navigation-right,
+        .hud-container:not(.pinned):not(:hover):not(:focus-within) .mode-button-corner {
             opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
             transition: opacity 0.3s ease;
         }
         
@@ -464,6 +493,8 @@
         .hud-container.pinned .mode-button-corner,
         .hud-container.pinned .shape-pattern-display {
             opacity: 1 !important;
+            visibility: visible;
+            pointer-events: auto;
         }
         
         /* Enhanced Status Display - Centered exactly with breathing shape */
@@ -860,6 +891,15 @@
             }
         }
 
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
         /* In/Out Display Styling - Hidden to avoid collision */
         .in-out-display {
             display: none;
@@ -1134,6 +1174,184 @@
             opacity: 0.2;
             transition: opacity 1s ease-out;
         }
+
+        /* System editor -------------------------------------------------- */
+        :root {
+            --editor-bg: #0d1016;
+            --editor-surface: #151a23;
+            --editor-surface-raised: #1b222d;
+            --editor-line: rgba(255, 255, 255, 0.10);
+            --editor-line-strong: rgba(255, 255, 255, 0.18);
+            --editor-text: #f4f6f8;
+            --editor-muted: #99a4b4;
+            --editor-subtle: #667283;
+            --editor-focus: #a8d5ff;
+            --editor-success: #78d9ad;
+            --editor-danger: #ff9b98;
+            --editor-radius: 14px;
+        }
+
+        body.editor-open {
+            background: var(--editor-bg);
+            overflow: hidden;
+        }
+
+        body.editor-open > #hud-container {
+            visibility: hidden;
+        }
+
+        #editor-shell {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: none;
+            color: var(--editor-text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            -webkit-app-region: no-drag;
+        }
+
+        #editor-shell.is-open { display: block; }
+
+        .editor-backdrop {
+            position: absolute;
+            inset: 0;
+            background: #0d1016;
+        }
+
+        .editor-window {
+            position: relative;
+            display: grid;
+            grid-template-rows: 68px minmax(0, 1fr) 76px;
+            width: 100%;
+            height: 100%;
+            background: var(--editor-bg);
+            overflow: hidden;
+        }
+
+        .editor-topbar,
+        .editor-footer {
+            display: flex;
+            align-items: center;
+            padding: 0 28px;
+            border-bottom: 1px solid var(--editor-line);
+            background: rgba(13, 16, 22, 0.92);
+        }
+
+        .editor-topbar { justify-content: space-between; }
+        .editor-footer { justify-content: space-between; border-top: 1px solid var(--editor-line); border-bottom: 0; }
+
+        .editor-brand { display: flex; gap: 12px; align-items: center; }
+        .editor-brand-mark { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--editor-line-strong); border-radius: 8px; color: var(--theme-accent); background: var(--theme-background); font-size: 14px; }
+        .editor-eyebrow { margin: 0 0 3px; color: var(--editor-muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+        .editor-title { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+        .editor-top-actions { display: flex; align-items: center; gap: 16px; }
+        .editor-save-status { color: var(--editor-muted); font-size: 12px; min-width: 120px; text-align: right; }
+        .editor-save-status[data-status="saved"] { color: var(--editor-success); }
+        .editor-save-status[data-status="error"] { color: var(--editor-danger); }
+
+        .editor-icon-button,
+        .editor-secondary-button,
+        .editor-primary-button {
+            min-height: 40px;
+            border: 1px solid var(--editor-line-strong);
+            border-radius: 9px;
+            color: var(--editor-text);
+            background: var(--editor-surface);
+            font: inherit;
+            cursor: pointer;
+        }
+        .editor-icon-button { width: 40px; font-size: 18px; }
+        .editor-secondary-button, .editor-primary-button { padding: 0 16px; font-size: 13px; font-weight: 650; }
+        .editor-primary-button { border-color: transparent; color: #081218; background: var(--theme-accent); }
+        .editor-icon-button:hover, .editor-secondary-button:hover { background: var(--editor-surface-raised); }
+        .editor-primary-button:hover { filter: brightness(1.08); }
+        .editor-icon-button:focus-visible, .editor-secondary-button:focus-visible, .editor-primary-button:focus-visible,
+        .editor-select:focus-visible, .editor-range:focus-visible, .editor-frame-option:focus-visible,
+        .editor-state-option:focus-visible, .editor-title:focus-visible { outline: 2px solid var(--editor-focus); outline-offset: 3px; }
+
+        .editor-main { display: grid; grid-template-columns: 188px minmax(0, 1fr); min-height: 0; }
+        .editor-sidebar { padding: 24px 16px; border-right: 1px solid var(--editor-line); background: #11151d; }
+        .editor-sidebar-label { margin: 0 10px 10px; color: var(--editor-subtle); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+        .editor-nav-item { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 42px; padding: 0 10px; border: 0; border-radius: 8px; color: var(--editor-muted); background: transparent; font: inherit; font-size: 13px; text-align: left; }
+        .editor-nav-item.is-active { color: var(--editor-text); background: var(--editor-surface-raised); box-shadow: inset 2px 0 var(--theme-accent); }
+        .editor-nav-index { width: 18px; color: var(--editor-subtle); font-size: 11px; }
+        .editor-help { margin: 28px 10px 0; color: var(--editor-subtle); font-size: 11px; line-height: 1.5; }
+
+        .editor-content { min-width: 0; overflow: auto; padding: 34px 40px 44px; }
+        .editor-page-header { display: flex; justify-content: space-between; align-items: end; gap: 20px; max-width: 1120px; margin: 0 auto 26px; }
+        .editor-page-header h1 { margin: 0 0 8px; font-size: 26px; letter-spacing: -.04em; }
+        .editor-page-header p { margin: 0; color: var(--editor-muted); font-size: 13px; }
+        .editor-status-chip { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; color: var(--editor-success); font-size: 12px; }
+        .editor-status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px rgba(120, 217, 173, .12); }
+        .editor-grid { display: grid; grid-template-columns: minmax(360px, 1.08fr) minmax(320px, .92fr); gap: 20px; max-width: 1120px; margin: auto; }
+        .editor-card { border: 1px solid var(--editor-line); border-radius: var(--editor-radius); background: var(--editor-surface); box-shadow: 0 12px 30px rgba(0, 0, 0, .16); }
+        .editor-card-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px; border-bottom: 1px solid var(--editor-line); }
+        .editor-card-header h2 { margin: 0; font-size: 13px; font-weight: 650; }
+        .editor-card-header span { color: var(--editor-muted); font-size: 11px; }
+
+        .editor-preview-wrap { padding: 20px; }
+        .editor-preview { position: relative; min-height: 372px; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--editor-line); border-radius: 10px; background: radial-gradient(circle at 50% 42%, var(--preview-background), #0e131a 64%); }
+        .editor-preview::before, .editor-preview::after { position: absolute; color: var(--editor-subtle); font-family: ui-monospace, monospace; font-size: 10px; opacity: .7; }
+        .editor-preview::before { content: "PREVIEW / LIVE"; top: 15px; left: 16px; letter-spacing: .12em; }
+        .editor-preview::after { content: "300 × 300"; right: 16px; bottom: 15px; }
+        .preview-grid { position: absolute; inset: 50px 36px 48px; opacity: .18; background-image: linear-gradient(rgba(255,255,255,.18) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px); background-size: 28px 28px; mask-image: linear-gradient(to bottom, transparent, #000 25%, #000 75%, transparent); }
+        .preview-hud { position: relative; z-index: 1; width: 210px; height: 210px; display: grid; place-items: center; border: 1px solid var(--preview-accent); border-radius: 22px; background: rgba(12, 16, 22, .52); color: var(--preview-accent); transition: border-radius .2s, background .2s, box-shadow .2s; }
+        .preview-hud.frame-glass { border-color: var(--preview-secondary); background: linear-gradient(135deg, var(--preview-background), rgba(10, 15, 22, .7)); box-shadow: 0 0 34px color-mix(in srgb, var(--preview-primary), transparent 60%); backdrop-filter: blur(10px); }
+        .preview-hud.frame-outline { border: 2px solid var(--preview-accent); background: transparent; border-radius: 12px; }
+        .preview-hud.frame-soft { border: 0; background: var(--preview-background); border-radius: 34px; box-shadow: 0 18px 40px rgba(0,0,0,.28); }
+        .preview-hud.frame-quiet { border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.025); border-radius: 50%; }
+        .preview-shape { width: 98px; height: 98px; border: 2px solid var(--preview-accent); border-radius: 50%; box-shadow: 0 0 22px color-mix(in srgb, var(--preview-primary), transparent 35%); opacity: calc(.55 + var(--preview-intensity) * .45); }
+        .preview-hud::after { content: "INHALE"; position: absolute; bottom: 30px; font-size: 10px; letter-spacing: .18em; }
+        .preview-meta { position: absolute; bottom: 16px; left: 18px; color: var(--editor-muted); font-size: 11px; }
+        .preview-state { position: absolute; z-index: 2; display: none; width: min(220px, 72%); padding: 18px; border: 1px solid var(--editor-line-strong); border-radius: 10px; background: rgba(15, 19, 26, .94); color: var(--editor-text); text-align: center; font-size: 12px; box-shadow: 0 14px 32px rgba(0,0,0,.35); }
+        .editor-preview[data-state="loading"] .preview-state, .editor-preview[data-state="empty"] .preview-state, .editor-preview[data-state="error"] .preview-state, .editor-preview[data-state="disabled"] .preview-state { display: block; }
+        .editor-preview[data-state="loading"] .preview-shape { animation: editor-spin 1.4s linear infinite; }
+        .editor-preview[data-state="empty"] .preview-shape, .editor-preview[data-state="disabled"] .preview-shape { opacity: .18; }
+        .editor-preview[data-state="error"] .preview-state { color: var(--editor-danger); border-color: rgba(255,155,152,.45); }
+        @keyframes editor-spin { to { transform: rotate(360deg); } }
+        .preview-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 2px 0; }
+        .preview-toolbar-label { color: var(--editor-muted); font-size: 11px; }
+        .editor-state-options { display: flex; gap: 4px; flex-wrap: wrap; }
+        .editor-state-option { min-height: 28px; padding: 0 8px; border: 1px solid var(--editor-line); border-radius: 6px; color: var(--editor-muted); background: transparent; font: inherit; font-size: 10px; cursor: pointer; }
+        .editor-state-option.is-selected { border-color: var(--theme-accent); color: var(--editor-text); background: var(--theme-background); }
+
+        .editor-controls { padding: 20px; }
+        .editor-control-section + .editor-control-section { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--editor-line); }
+        .editor-control-section h3 { margin: 0 0 12px; color: var(--editor-muted); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+        .editor-frame-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .editor-frame-option { display: grid; gap: 7px; padding: 9px; border: 1px solid var(--editor-line); border-radius: 9px; color: var(--editor-muted); background: #121720; font: inherit; font-size: 10px; text-align: left; cursor: pointer; }
+        .editor-frame-option.is-selected { border-color: var(--theme-accent); color: var(--editor-text); background: var(--theme-background); box-shadow: inset 0 0 0 1px var(--theme-accent); }
+        .frame-swatch { height: 34px; border: 1px solid var(--editor-muted); border-radius: 7px; background: rgba(255,255,255,.05); }
+        .editor-frame-option[data-frame="outline"] .frame-swatch { border-width: 2px; background: transparent; border-radius: 3px; }
+        .editor-frame-option[data-frame="soft"] .frame-swatch { border: 0; border-radius: 12px; background: rgba(255,255,255,.14); }
+        .editor-frame-option[data-frame="quiet"] .frame-swatch { border-color: rgba(255,255,255,.2); border-radius: 50%; background: transparent; }
+        .editor-field { display: grid; gap: 9px; }
+        .editor-field + .editor-field { margin-top: 16px; }
+        .editor-field-head { display: flex; justify-content: space-between; gap: 12px; color: var(--editor-text); font-size: 12px; }
+        .editor-field-value { color: var(--editor-muted); font-family: ui-monospace, monospace; }
+        .editor-select { width: 100%; height: 40px; padding: 0 11px; border: 1px solid var(--editor-line-strong); border-radius: 8px; color: var(--editor-text); background: #11161e; font: inherit; font-size: 12px; }
+        .editor-range { width: 100%; height: 4px; accent-color: var(--theme-accent); cursor: pointer; }
+        .editor-range:disabled { cursor: not-allowed; opacity: .35; }
+        .editor-position-note { margin: 16px 0 0; padding: 10px 12px; border: 1px solid var(--editor-line); border-radius: 8px; color: var(--editor-muted); font-size: 11px; line-height: 1.4; }
+        .editor-position-note strong { color: var(--editor-text); font-weight: 600; }
+
+        @media (max-width: 760px) {
+            .editor-topbar, .editor-footer { padding: 0 16px; }
+            .editor-main { display: block; overflow: auto; }
+            .editor-sidebar { display: none; }
+            .editor-content { padding: 24px 16px 32px; overflow: visible; }
+            .editor-page-header { align-items: start; flex-direction: column; margin-bottom: 18px; }
+            .editor-page-header h1 { font-size: 22px; }
+            .editor-grid { grid-template-columns: 1fr; }
+            .editor-preview { min-height: 300px; }
+            .editor-footer { gap: 10px; }
+            .editor-footer .editor-secondary-button { display: none; }
+            .editor-save-status { min-width: 0; margin-right: auto; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .preview-hud, .editor-preview *, #editor-shell * { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+        }
     </style>
 </head>
 <body>
@@ -1152,7 +1370,99 @@
         <!-- Enhanced Controls will be added by JavaScript -->
         <!-- Mode Controls will be added by JavaScript -->
     </div>
+
+    <div id="editor-shell" aria-hidden="true" inert>
+        <div class="editor-backdrop" aria-hidden="true"></div>
+        <section class="editor-window" role="dialog" aria-modal="true" aria-labelledby="editor-title">
+            <header class="editor-topbar">
+                <div class="editor-brand">
+                    <div class="editor-brand-mark" aria-hidden="true">✦</div>
+                    <div>
+                        <p class="editor-eyebrow">Breathing HUD / system</p>
+                        <h1 class="editor-title" id="editor-title" tabindex="-1">Minimal editor</h1>
+                    </div>
+                </div>
+                <div class="editor-top-actions">
+                    <span class="editor-save-status" id="editor-save-status" role="status" aria-live="polite" data-status="idle">Local changes</span>
+                    <button type="button" class="editor-icon-button" data-editor-close aria-label="Close editor">×</button>
+                </div>
+            </header>
+            <div class="editor-main">
+                <aside class="editor-sidebar" aria-label="Editor sections">
+                    <p class="editor-sidebar-label">Workspace</p>
+                    <button type="button" class="editor-nav-item is-active"><span class="editor-nav-index">01</span>Appearance</button>
+                    <button type="button" class="editor-nav-item"><span class="editor-nav-index">02</span>Motion</button>
+                    <p class="editor-help">Changes apply to the live overlay as you work. Save when the preview feels right.</p>
+                </aside>
+                <main class="editor-content">
+                    <div class="editor-page-header">
+                        <div>
+                            <h1>Shape your breathing space</h1>
+                            <p>Test the frame, rhythm, and visual weight of the overlay.</p>
+                        </div>
+                        <div class="editor-status-chip"><span class="editor-status-dot" aria-hidden="true"></span>Live preview</div>
+                    </div>
+                    <div class="editor-grid">
+                        <section class="editor-card" aria-labelledby="preview-heading">
+                            <div class="editor-card-header"><h2 id="preview-heading">Preview</h2><span id="editor-shape-name">Circle</span></div>
+                            <div class="editor-preview-wrap">
+                                <div class="editor-preview" id="editor-preview" data-state="success">
+                                    <div class="preview-grid" aria-hidden="true"></div>
+                                    <div class="preview-hud frame-glass" id="editor-preview-frame" aria-label="Live HUD preview">
+                                        <div class="preview-shape" aria-hidden="true"></div>
+                                    </div>
+                                    <div class="preview-state" aria-live="polite"><span data-preview-message>Ready to breathe</span></div>
+                                    <div class="preview-meta"><span id="editor-pattern-name">Zen</span> · <span id="editor-shape-type">circle</span></div>
+                                </div>
+                                <div class="preview-toolbar">
+                                    <span class="preview-toolbar-label">Preview state</span>
+                                    <div class="editor-state-options" role="radiogroup" aria-label="Preview state">
+                                        <button type="button" class="editor-state-option" data-preview-state="loading" role="radio" aria-checked="false">Loading</button>
+                                        <button type="button" class="editor-state-option" data-preview-state="empty" role="radio" aria-checked="false">Empty</button>
+                                        <button type="button" class="editor-state-option" data-preview-state="error" role="radio" aria-checked="false">Error</button>
+                                        <button type="button" class="editor-state-option is-selected" data-preview-state="success" role="radio" aria-checked="true">Ready</button>
+                                        <button type="button" class="editor-state-option" data-preview-state="disabled" role="radio" aria-checked="false">Disabled</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="editor-card" aria-labelledby="settings-heading">
+                            <div class="editor-card-header"><h2 id="settings-heading">System settings</h2><span id="editor-theme-name">Ocean</span></div>
+                            <div class="editor-controls">
+                                <div class="editor-control-section">
+                                    <h3>Frame</h3>
+                                    <div class="editor-frame-grid" role="radiogroup" aria-label="HUD frame style">
+                                        <button type="button" class="editor-frame-option is-selected" data-frame="glass" role="radio" aria-checked="true"><span class="frame-swatch" aria-hidden="true"></span>Glass</button>
+                                        <button type="button" class="editor-frame-option" data-frame="outline" role="radio" aria-checked="false"><span class="frame-swatch" aria-hidden="true"></span>Outline</button>
+                                        <button type="button" class="editor-frame-option" data-frame="soft" role="radio" aria-checked="false"><span class="frame-swatch" aria-hidden="true"></span>Soft</button>
+                                        <button type="button" class="editor-frame-option" data-frame="quiet" role="radio" aria-checked="false"><span class="frame-swatch" aria-hidden="true"></span>Quiet</button>
+                                    </div>
+                                </div>
+                                <div class="editor-control-section">
+                                    <h3>Appearance</h3>
+                                    <div class="editor-field"><label class="editor-field-head" for="editor-theme"><span>Theme</span><span class="editor-field-value" id="editor-position">0, 0</span></label><select class="editor-select" id="editor-theme"><option value="ocean">Ocean</option><option value="forest">Forest</option><option value="sunset">Sunset</option><option value="moonlight">Moonlight</option><option value="minimal">Minimal</option></select></div>
+                                    <div class="editor-field"><label class="editor-field-head" for="editor-intensity"><span>Intensity</span><span class="editor-field-value" id="editor-intensity-value">70%</span></label><input class="editor-range" id="editor-intensity" type="range" min="0.1" max="1" step="0.1" value="0.7"></div>
+                                </div>
+                                <div class="editor-control-section">
+                                    <h3>Motion scale</h3>
+                                    <div class="editor-field"><label class="editor-field-head" for="editor-base"><span>Base size</span><span class="editor-field-value" id="editor-base-value">0.60</span></label><input class="editor-range" id="editor-base" type="range" min="0.2" max="1.2" step="0.05" value="0.6"></div>
+                                    <div class="editor-field"><label class="editor-field-head" for="editor-inhale"><span>Inhale maximum</span><span class="editor-field-value" id="editor-inhale-value">1.00</span></label><input class="editor-range" id="editor-inhale" type="range" min="0.6" max="1.8" step="0.05" value="1"></div>
+                                    <div class="editor-field"><label class="editor-field-head" for="editor-exhale"><span>Exhale minimum</span><span class="editor-field-value" id="editor-exhale-value">0.40</span></label><input class="editor-range" id="editor-exhale" type="range" min="0.1" max="0.8" step="0.05" value="0.4"></div>
+                                    <div class="editor-field"><label class="editor-field-head" for="editor-size"><span>HUD size</span><span class="editor-field-value" id="editor-size-value">300px</span></label><input class="editor-range" id="editor-size" type="range" min="240" max="600" step="40" value="300"></div>
+                                    <p class="editor-position-note"><strong id="editor-pattern-name">Zen</strong> · <span id="editor-shape-name">Circle</span> · drag the shape in the overlay or use arrow keys to fine-tune its position.</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+            </div>
+            <footer class="editor-footer">
+                <button type="button" class="editor-secondary-button" data-editor-reset>Reset defaults</button>
+                <div class="editor-top-actions"><button type="button" class="editor-secondary-button" data-editor-close>Cancel</button><button type="button" class="editor-primary-button" data-editor-save>Save changes</button></div>
+            </footer>
+        </section>
+    </div>
     
-    <script src="../../dist/renderer/app.js"></script>
+    <script src="./app.js"></script>
 </body>
 </html>

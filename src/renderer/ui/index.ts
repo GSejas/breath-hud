@@ -5,4 +5,4 @@
 export { UIBuilder } from './ui-builder';
 export { EventManager, type EventHandlers } from './event-manager';
 export { DisplayUpdater } from './display-updater';
-export { TooltipManager } from './tooltip-manager';
+export { TooltipManager } from './tooltip-manager';export { EditPanel } from './edit-panel';

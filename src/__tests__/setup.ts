@@ -25,22 +25,6 @@ Object.defineProperty(window, 'getComputedStyle', {
   })
 });
 
-// Mock DOM methods
-Object.defineProperty(document, 'getElementById', {
-  value: jest.fn(() => ({
-    style: {},
-    classList: {
-      add: jest.fn(),
-      remove: jest.fn(),
-      toggle: jest.fn(),
-      contains: jest.fn()
-    },
-    appendChild: jest.fn(),
-    removeChild: jest.fn(),
-  })),
-  writable: true
-});
-
 // Suppress console.log in tests unless needed
 global.console = {
   ...console,
@@ -48,3 +32,48 @@ global.console = {
   warn: jest.fn(),
   error: jest.fn(),
 };
+
+// Provide a lightweight 2D canvas context shim for jsdom tests to avoid "Not implemented: getContext" errors
+(function applyCanvasShim() {
+  const noop = () => {};
+  const stubContext: any = {
+    save: noop,
+    restore: noop,
+    clearRect: noop,
+    beginPath: noop,
+    arc: noop,
+    fill: noop,
+    stroke: noop,
+    moveTo: noop,
+    lineTo: noop,
+    rect: noop,
+    bezierCurveTo: noop,
+    setLineDash: noop,
+    clip: noop,
+    fillRect: noop,
+    scale: noop,
+    translate: noop,
+    rotate: noop,
+    measureText: () => ({ width: 0 }),
+    getImageData: () => ({ data: [] }),
+    putImageData: noop,
+    createImageData: () => ({ data: [] }),
+    fillStyle: '',
+    strokeStyle: '',
+    globalAlpha: 1,
+    lineWidth: 1,
+    lineCap: 'butt',
+    lineJoin: 'miter',
+    shadowColor: 'transparent',
+    shadowBlur: 0,
+  };
+
+  try {
+    (HTMLCanvasElement.prototype as any).getContext = function (type: string) {
+      if (type === '2d') return stubContext;
+      return null;
+    };
+  } catch (e) {
+    // ignore if prototype cannot be modified in some environments
+  }
+})();

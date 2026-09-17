@@ -7,6 +7,7 @@ Comprehensive documentation for Breathing HUD, organized by topic and audience.
 ### For Users
 - [**README**](../README.md) - Quick start and overview
 - [**Features Guide**](FEATURES.md) - Complete feature documentation
+- [**Controls Reference**](CONTROLS.md) - Every button, slider, mode, and shortcut
 - [**Configuration**](CONFIGURATION.md) - Settings and customization
 
 ### For Developers  
@@ -19,6 +20,7 @@ Comprehensive documentation for Breathing HUD, organized by topic and audience.
 docs/
 ├── README.md           # This index (you are here)
 ├── FEATURES.md         # Complete feature guide (242 lines)
+├── CONTROLS.md         # Implementation-verified control reference
 ├── CONFIGURATION.md    # Configuration reference (247 lines)  
 ├── DEVELOPMENT.md      # Developer setup guide (248 lines)
 ├── API.md             # Technical API reference (245 lines)

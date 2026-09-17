@@ -14,6 +14,13 @@ class HudApplication {
 
   private setupAppEvents(): void {
     app.whenReady().then(() => {
+      if (app.isPackaged && process.platform === 'win32') {
+        app.setLoginItemSettings({
+          openAtLogin: true,
+          path: process.execPath,
+        });
+      }
+
       this.createWindow();
       this.registerShortcuts();
     });
@@ -63,14 +70,16 @@ class HudApplication {
 
     console.log('Window created, loading HTML...');
 
-    // Load the renderer HTML from source
-    const htmlFile = '../../src/renderer/index.html';
+    // Load the renderer HTML from the packaged renderer output.
+    const htmlFile = '../renderer/index.html';
       
+    const loadWindow = this.mainWindow.loadFile(join(__dirname, htmlFile));
+    loadWindow.catch((error) => {
+      console.error('Failed to load HUD renderer:', error);
+    });
+
     if (process.env.NODE_ENV === 'development') {
-      this.mainWindow.loadFile(join(__dirname, htmlFile));
       this.mainWindow.webContents.openDevTools();
-    } else {
-      this.mainWindow.loadFile(join(__dirname, htmlFile));
     }
 
     this.mainWindow.on('ready-to-show', () => {

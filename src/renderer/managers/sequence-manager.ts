@@ -28,6 +28,11 @@ export class BreathingSequenceManager {
     this.currentRepetition = 0;
     
     const firstStep = this.currentSequence.steps[0];
+    if (!firstStep) {
+      this.isSequenceActive = false;
+      console.warn(`Sequence cannot start without steps: ${this.currentSequence.name}`);
+      return;
+    }
     this.notifyPatternChange(firstStep.pattern, this.getStepInfo());
     
     console.log(`Sequence started: ${this.currentSequence.name}`);
@@ -92,6 +97,19 @@ export class BreathingSequenceManager {
     
     const currentStep = this.currentSequence.steps[this.currentStepIndex];
     return currentStep.pattern;
+  }
+
+  /**
+   * Shows the first pattern of the selected sequence without starting it.
+   * This keeps selecting a routine separate from starting a routine.
+   */
+  public previewSequence(): void {
+    if (!this.currentSequence || this.isSequenceActive) return;
+
+    const firstStep = this.currentSequence.steps[0];
+    if (!firstStep) return;
+
+    this.notifyPatternChange(firstStep.pattern, this.getStepInfo());
   }
   
   public getSequenceInfo(): string {
